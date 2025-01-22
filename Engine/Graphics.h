@@ -58,7 +58,7 @@ public:
 		PutPixel( x,y,{ unsigned char( r ),unsigned char( g ),unsigned char( b ) } );
 	}
 	void PutPixel( int x,int y,Color c );
-	void DrawRectanlge (int set_x, int set_y, int set_width, int set_height, Color c);
+	void DrawRectangle (int set_x, int set_y, int set_width, int set_height, Color c);
 	void DrawCircle (int center_x, int center_y, int radius, Color c);
 	~Graphics();
 private:

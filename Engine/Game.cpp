@@ -25,8 +25,26 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	board(gfx)
+	brd(gfx)
 {
+	int tile_counter = 0;
+	int black_tile_counter = 0;
+	Location loc = { 116, 16 };
+	for(int y = loc.y; y < loc.y + 8 + tile_dims * 8; y += tile_dims + 1) {
+		for(int x = loc.x; x < loc.x + 8 + tile_dims * 8; x += tile_dims + 1) {
+			if(tile_counter % 2 == 1) {
+				brd.SetTileLocation (Location(x + tile_dims / 2, y + tile_dims / 2), black_tile_counter);
+				black_tile_counter++;
+			}
+			++tile_counter;
+		}
+		++tile_counter;
+	}
+
+	for(int i = 0; i < 12; ++i) {
+		player2_location[i] = brd.GetTileLocation (i);
+		player1_location[i] = brd.GetTileLocation (i + 20);
+	}
 }
 
 void Game::Go()
@@ -39,49 +57,19 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+	if(wnd.kbd.KeyIsPressed (VK_CONTROL)) {
+		player1_location[0] = brd.GetTileLocation (16);
+	}
 }
 
 void Game::ComposeFrame()
-{
-	board.DrawBoard ();
+{	
+	Location loc = { 116, 16 };
+	brd.DrawBoard (loc);
 
-	// For setup
-	// y moves by 70
-	// x moves by 140
-	// x spread is 560
-	// y spread is 210
-
-
-	int counter = 0;
-	for(int y0 = 35; y0 < 245; y0 += 70) {
-		if(counter % 2 == 0) {
-			for(int x0 = 105; x0 < 665; x0 += 140) {
-				gfx.DrawCircle (x0, y0, 30, Color(185, 0, 0));
-				gfx.DrawCircle (x0, y0, 25, Color(165, 10, 10));
-			}
-		} else {
-			for(int x0 = 35; x0 < 595; x0 += 140) {
-				gfx.DrawCircle (x0, y0, 30, Color(185, 0, 0));
-				gfx.DrawCircle (x0, y0, 25, Color (165, 10, 10));
-			}
-		}
-		++counter;
-	}
-
-	counter = 0;
-	for(int y1 = 385; y1 < 595; y1 += 70) {
-		if(counter % 2 == 1) {
-			for(int x1 = 105; x1 < 665; x1 += 140) {
-				gfx.DrawCircle (x1, y1, 30, Colors::Black);
-				gfx.DrawCircle (x1, y1, 25, Color (5, 5, 5));
-			}
-		} else {
-			for(int x1 = 35; x1 < 595; x1 += 140) {
-				gfx.DrawCircle (x1, y1, 30, Colors::Black);
-				gfx.DrawCircle (x1, y1, 25, Color (5, 5, 5));
-			}
-		}
-		++counter;
+	for(int i = 0; i < 12; i++) {
+		player2.Player2Draw (gfx, player2_location[i]);
+		player1.Player1Draw (gfx, player1_location[i]);
 	}
 	
 }

@@ -25,6 +25,7 @@
 #include "Graphics.h"
 #include "Colors.h"
 #include "Board.h"
+#include "Players.h"
 
 class Game
 {
@@ -44,6 +45,12 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-	Board board;
+	Board brd;
+	Players player1;
+	Players player2;
+	Location player1_location[12];
+	Location player2_location[12];
+	bool begin_game = false;
+	static constexpr int tile_dims = 70;
 	/********************************/
 };

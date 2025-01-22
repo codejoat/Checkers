@@ -8,15 +8,13 @@ class Board
 {
 public:
 	Board (Graphics& set_gfx);
-	void DrawCell (const Location& loc, Color c) const;
-	void DrawBoard () const;
-	int GetGridWidth () const;
-	int GetGridHeight () const;
+	void DrawBoard (Location& loc);
+	Location GetTileLocation (const int tile_number) const;
+	void SetTileLocation (const Location& loc, const int tile_number);
 
 private:
-	static constexpr int width = 8;
-	static constexpr int height = 8;
-	static constexpr int cell_dimension = 70;
+	static constexpr int tile_dimension = 70;
+	Location tile_locator[32];
 	Graphics& gfx;
 };
 
