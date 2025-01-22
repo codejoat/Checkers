@@ -46,9 +46,8 @@ private:
 	/********************************/
 	/*  User Variables              */
 	Board brd;
-	Players player1[12];
-	Players player2[12];
-
-	static constexpr int tile_dims = 70;
+	Players players;
+	int player1[12];
+	int player2[12];
 	/********************************/
 };

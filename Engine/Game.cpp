@@ -21,29 +21,16 @@
 #include "MainWindow.h"
 #include "Game.h"
 
-Game::Game( MainWindow& wnd )
+Game::Game (MainWindow& wnd)
 	:
-	wnd( wnd ),
-	gfx( wnd ),
-	brd(gfx)
+	wnd (wnd),
+	gfx (wnd),
+	brd (gfx),
+	players(brd)
 {
-	int tile_counter = 0;
-	int black_tile_counter = 0;
-	Location loc = { 116, 16 };
-	for(int y = loc.y; y < loc.y + 8 + tile_dims * 8; y += tile_dims + 1) {
-		for(int x = loc.x; x < loc.x + 8 + tile_dims * 8; x += tile_dims + 1) {
-			if(tile_counter % 2 == 1) {
-				brd.SetTileLocation (Location(x + tile_dims / 2, y + tile_dims / 2), black_tile_counter);
-				black_tile_counter++;
-			}
-			++tile_counter;
-		}
-		++tile_counter;
-	}
-
 	for(int i = 0; i < 12; ++i) {
-		player2[i].Player2SetLocation (i);
-		player1[i].Player1SetLocation (i + 20);
+		player2[i] = i;
+		player1[i] = i + 20;
 	}
 }
 
@@ -57,8 +44,10 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+
+
 	if(wnd.kbd.KeyIsPressed (VK_CONTROL)) {
-		player1[0].Select ();
+		player1[0];
 	}
 }
 
@@ -68,8 +57,8 @@ void Game::ComposeFrame()
 	brd.DrawBoard (loc);
 
 	for(int i = 0; i < 12; i++) {
-		player2[i].Player2Draw (gfx, brd.GetTileLocation(player2[i].PLayer2GetLocation()));
-		player1[i].Player1Draw (gfx, brd.GetTileLocation(player1[i].PLayer2GetLocation()));
+		players.Player2Draw (gfx, brd.GetTileLocation(player2[i]));
+		players.Player1Draw (gfx, brd.GetTileLocation(player1[i]));
 	}
 	
 }
