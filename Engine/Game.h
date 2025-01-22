@@ -46,11 +46,9 @@ private:
 	/********************************/
 	/*  User Variables              */
 	Board brd;
-	Players player1;
-	Players player2;
-	Location player1_location[12];
-	Location player2_location[12];
-	bool begin_game = false;
+	Players player1[12];
+	Players player2[12];
+
 	static constexpr int tile_dims = 70;
 	/********************************/
 };

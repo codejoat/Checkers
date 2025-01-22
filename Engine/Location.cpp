@@ -6,9 +6,3 @@ Location::Location (int set_x, int set_y)
 	y(set_y)
 {
 }
-
-void Location::Add (const Location& val)
-{
-	x += val.x;
-	y += val.y;
-}

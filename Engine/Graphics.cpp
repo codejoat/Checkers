@@ -336,6 +336,18 @@ void Graphics::DrawCircle (int center_x, int center_y, int radius, Color c)
 	}
 }
 
+void Graphics::DrawRing (int center_x, int center_y, int inner_radius, int outer_radius, Color c)
+{
+	for(int y = center_y - outer_radius; y < center_y + outer_radius; ++y) {
+		for(int x = center_x - outer_radius; x < center_x + outer_radius; ++x) {
+			if(abs (pow (x - center_x, 2)) + abs (pow (y - center_y, 2)) <= pow (outer_radius, 2) &&
+				abs (pow (x - center_x, 2)) + abs (pow (y - center_y, 2)) >= pow (inner_radius, 2)) {
+				PutPixel (x, y, c);
+			}
+		}
+	}
+}
+
 
 //////////////////////////////////////////////////
 //           Graphics Exception

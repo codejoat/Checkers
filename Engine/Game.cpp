@@ -42,8 +42,8 @@ Game::Game( MainWindow& wnd )
 	}
 
 	for(int i = 0; i < 12; ++i) {
-		player2_location[i] = brd.GetTileLocation (i);
-		player1_location[i] = brd.GetTileLocation (i + 20);
+		player2[i].Player2SetLocation (i);
+		player1[i].Player1SetLocation (i + 20);
 	}
 }
 
@@ -58,7 +58,7 @@ void Game::Go()
 void Game::UpdateModel()
 {
 	if(wnd.kbd.KeyIsPressed (VK_CONTROL)) {
-		player1_location[0] = brd.GetTileLocation (16);
+		player1[0].Select ();
 	}
 }
 
@@ -68,8 +68,8 @@ void Game::ComposeFrame()
 	brd.DrawBoard (loc);
 
 	for(int i = 0; i < 12; i++) {
-		player2.Player2Draw (gfx, player2_location[i]);
-		player1.Player1Draw (gfx, player1_location[i]);
+		player2[i].Player2Draw (gfx, brd.GetTileLocation(player2[i].PLayer2GetLocation()));
+		player1[i].Player1Draw (gfx, brd.GetTileLocation(player1[i].PLayer2GetLocation()));
 	}
 	
 }
