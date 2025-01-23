@@ -3,12 +3,13 @@
 #include "Location.h"
 #include "Graphics.h"
 #include "Board.h"
+#include "Mouse.h"
 
 class Players
 {
 public: 
 	Players (Board& set_brd);
-	void Select ();
+	void Select (Graphics& gfx, Location& loc) const;
 	Location GetCoordinates (const int tile_number) const;
 
 public:
