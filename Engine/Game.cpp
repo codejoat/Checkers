@@ -46,22 +46,12 @@ void Game::UpdateModel()
 {
 }
 
-void Game::ComposeFrame()
-{	
+void Game::ComposeFrame ()
+{
 	Location loc = { 116, 16 };
 	brd.DrawBoard (loc);
 
-	const int mouseX = wnd.mouse.GetPosX ();
-	const int mouseY = wnd.mouse.GetPosY ();
-	
-
-	auto DrawWithRing = [&](int playerX, int playerY) {
-		if(mouseX <= playerX + 20 && mouseX >= playerX - 20 && mouseY <= playerY + 20 && mouseY >= playerY - 20) {
-			gfx.DrawRing (playerX, playerY, 20, 22, Colors::Yellow);
-		}
-	};
-
-	for(int i = 0; i < 12; i++) {		
+	for(int i = 0; i < 12; i++) {
 		const int player1X = brd.GetTileLocation (player1[i]).x;
 		const int player1Y = brd.GetTileLocation (player1[i]).y;
 		const int player2X = brd.GetTileLocation (player2[i]).x;
@@ -70,7 +60,34 @@ void Game::ComposeFrame()
 		players.Player2Draw (gfx, brd.GetTileLocation (player2[i]));
 		players.Player1Draw (gfx, brd.GetTileLocation (player1[i]));
 
-		DrawWithRing (player2X, player2Y);
-		DrawWithRing (player1X, player1Y);
+		SetState (player1X, player1Y);
+		SetState (player2X, player2Y);
+	}
+}
+
+void Game::SetState (const int& playerX, const int& playerY)
+{
+	const int mouseX = wnd.mouse.GetPosX ();
+	const int mouseY = wnd.mouse.GetPosY ();
+
+	if(mouseX <= playerX + 20 && mouseX >= playerX - 20 &&
+		mouseY <= playerY + 20 && mouseY >= playerY - 20) {
+		if(wnd.mouse.LeftIsPressed ()) {
+			DrawStatus (king, playerX, playerY);
+		} else if(wnd.mouse.RightIsPressed ()) {
+			DrawStatus (select, playerX, playerY);
+		} else {
+			DrawStatus (hover, playerX, playerY);
+		}
+	}
+}
+
+void Game::DrawStatus (const int status, int playerX, int playerY)
+{
+	switch(status) {
+	case king: gfx.DrawRectangle (playerX - 15, playerY - 15, 30, 30, Colors::Magenta); break;
+	case hover: gfx.DrawRing (playerX, playerY, 28, 30, Colors::Yellow); break;
+	case select: gfx.DrawRing (playerX, playerY, 28, 30, Colors::Cyan); break;
+	default:;
 	}
 }

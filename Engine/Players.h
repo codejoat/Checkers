@@ -9,13 +9,8 @@ class Players
 {
 public: 
 	Players (Board& set_brd);
-	void Select (Graphics& gfx, Location& loc) const;
-	Location GetCoordinates (const int tile_number) const;
-
-public:
 	void Player1Draw (Graphics& gfx, Location& loc) const;
 	void Player2Draw (Graphics& gfx, Location& loc) const;
-
 
 private:
 	static constexpr int radius = 30;
