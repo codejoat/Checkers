@@ -4,6 +4,7 @@ Board::Board (Graphics& set_gfx)
 	:
 	gfx(set_gfx)
 {
+	// Build board and set all locations to center of squares
 	int tile_counter = 0;
 	int pattern_counter = 0;
 	int black_tile_counter = 0;
@@ -22,8 +23,9 @@ Board::Board (Graphics& set_gfx)
 	}
 }
 
-void Board::DrawBoard (Location& loc)
+void Board::Draw (const Location& loc)
 {
+	// Draw the checker pattern // The pattern loop is only there to ++end_of_row, else you get stripes, not checkers
 	for(int pattern = 0; pattern < tiles_per_row; ++pattern) {
 		for(int i = 0; i < tiles_per_row; ++i) {
 			int x = build_board[i + pattern * tiles_per_row].x - tile_dimension / 2;
@@ -37,6 +39,7 @@ void Board::DrawBoard (Location& loc)
 		}
 	}
 
+	// Draw a border with what looks like worn corners and a crease in the middle
 	for(int y = loc.y - 5; y < loc.y + 12 + tile_dimension * tiles_per_row; ++y) {
 		for(int x = loc.x - 5; x < loc.x + 12 + tile_dimension * tiles_per_row; ++x) {
 			if(y < loc.y - 1 || y > loc.y + 7 + tile_dimension * tiles_per_row || x < loc.x - 1 || x > loc.x + 7 + tile_dimension * 8) {
@@ -60,13 +63,16 @@ Location Board::GetTileLocation (const int tile_number) const
 	return Location (tile_locator[tile_number].x, tile_locator[tile_number].y);
 }
 
-void Board::SetTileLocation (const Location& loc, const int tile_number, bool for_locator)
+void Board::SetTileLocation (const Location& tile_location, const int tile_number, bool for_locator)
 {
 	if(!for_locator) {
-		build_board[tile_number].x = loc.x;
-		build_board[tile_number].y = loc.y;
+		build_board[tile_number] = tile_location;
 	} else {
-		tile_locator[tile_number].x = loc.x;
-		tile_locator[tile_number].y = loc.y;
+		tile_locator[tile_number] = tile_location;
 	}
+}
+
+void Board::SetOccupied (const int tile_to_set, int which_player)
+{
+	occupied[tile_to_set] = which_player;
 }

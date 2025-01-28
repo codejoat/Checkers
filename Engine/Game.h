@@ -39,8 +39,6 @@ private:
 	void UpdateModel();
 	/********************************/
 	/*  User Functions              */
-	void SetState (const int& playerX, const int& playerY);
-	void DrawStatus (const int status, int playerX, int playerY);
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -48,18 +46,20 @@ private:
 	/********************************/
 	/*  User Variables              */
 	static constexpr int total_men = 12;
-	static constexpr int king = 0;
-	static constexpr int hover = 1;
-	static constexpr int select = 2;
-	
+	static constexpr int p1 = 1;
+	static constexpr int p2 = 2;
 
-	Board brd;
-	Players players;
-	int player1[total_men];
-	int player1_states[total_men];
-	int player2[total_men];
-	int player2_states[total_men];
-	bool destroyed = false;
-	bool is_selected = false;
+	static constexpr int _man = 0;
+	static constexpr int _king = 1;
+	static constexpr int _hover = 2;
+	static constexpr int _select = 3;
+
+	
+	Board board;
+	Mouse mouse;
+	Location location;
+	
+	Players player1_men[total_men];
+	Players player2_men[total_men];
 	/********************************/
 };

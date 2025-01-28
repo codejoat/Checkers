@@ -25,12 +25,12 @@ Game::Game (MainWindow& wnd)
 	:
 	wnd (wnd),
 	gfx (wnd),
-	brd (gfx),
-	players(brd)
+	board (gfx),
+	location(116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
 {
 	for(int i = 0; i < 12; ++i) {
-		player2[i] = i;
-		player1[i] = i + 20;
+		player1_men[i].Update (board.GetTileLocation (i + 20), _man);
+		player2_men[i].Update (board.GetTileLocation (i), _man);
 	}
 }
 
@@ -44,50 +44,35 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-}
-
-void Game::ComposeFrame ()
-{
-	Location loc = { 116, 16 };
-	brd.DrawBoard (loc);
-
 	for(int i = 0; i < 12; i++) {
-		const int player1X = brd.GetTileLocation (player1[i]).x;
-		const int player1Y = brd.GetTileLocation (player1[i]).y;
-		const int player2X = brd.GetTileLocation (player2[i]).x;
-		const int player2Y = brd.GetTileLocation (player2[i]).y;
-
-		players.Player2Draw (gfx, brd.GetTileLocation (player2[i]));
-		players.Player1Draw (gfx, brd.GetTileLocation (player1[i]));
-
-		SetState (player1X, player1Y);
-		SetState (player2X, player2Y);
-	}
-}
-
-void Game::SetState (const int& playerX, const int& playerY)
-{
-	const int mouseX = wnd.mouse.GetPosX ();
-	const int mouseY = wnd.mouse.GetPosY ();
-
-	if(mouseX <= playerX + 20 && mouseX >= playerX - 20 &&
-		mouseY <= playerY + 20 && mouseY >= playerY - 20) {
-		if(wnd.mouse.LeftIsPressed ()) {
-			DrawStatus (king, playerX, playerY);
-		} else if(wnd.mouse.RightIsPressed ()) {
-			DrawStatus (select, playerX, playerY);
+		const Location player1 = player1_men[i].GetLocation (board, i + 20);
+		const Location player2 = player2_men[i].GetLocation (board, i);
+		const Location mouse_position(wnd.mouse.GetPos());
+		
+		Location top_left1 = player1 - 24;
+		Location bottom_right1 = player1 + 24;
+		if(mouse_position >= top_left1 && mouse_position <= bottom_right1) {
+			player1_men[i].Update (player1, _hover);
 		} else {
-			DrawStatus (hover, playerX, playerY);
+			player1_men[i].Update (player1, _man);
+		}
+
+		Location top_left2 = player2 - 24;
+		Location bottom_right2 = player2 + 24;
+		if(mouse_position >= top_left2 && mouse_position <= bottom_right2) {
+			player2_men[i].Update (player2, _hover);
+		} else {
+			player2_men[i].Update (player2, _man);
 		}
 	}
 }
 
-void Game::DrawStatus (const int status, int playerX, int playerY)
+void Game::ComposeFrame ()
 {
-	switch(status) {
-	case king: gfx.DrawRectangle (playerX - 15, playerY - 15, 30, 30, Colors::Magenta); break;
-	case hover: gfx.DrawRing (playerX, playerY, 28, 30, Colors::Yellow); break;
-	case select: gfx.DrawRing (playerX, playerY, 28, 30, Colors::Cyan); break;
-	default:;
+	board.Draw (location);	
+
+	for(int i = 0; i < 12; ++i) {
+		player1_men[i].Draw (gfx, board.GetTileLocation (i + 20), p1, player1_men[i].GetStatus ());
+		player2_men[i].Draw (gfx, board.GetTileLocation (i), p2, player2_men[i].GetStatus ());
 	}
 }
