@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Location.h"
+#include "Position.h"
 #include "Graphics.h"
 #include "Board.h"
 #include "Mouse.h"
@@ -8,14 +8,16 @@
 class Players {
 	
 private:
-	Location location;
+	Position position;
 
 public:
 	Players () = default;
-	void Draw (Graphics& gfx, Location& location, const int which_player, const int status) const;
-	void Update (const Location& new_location, const int new_status);
+	void Draw (Graphics& gfx, Position& position, const int which_player, const int status) const;
+	void Update (const Position& new_location, const int new_status);
 	int GetStatus () const;
-	Location GetLocation (const Board& board, const int which_man) const;
+	bool IsSelected () const;
+	Position GetLocation (const Board& board, const int which_man) const;
+	
 
 
 private:
@@ -30,35 +32,3 @@ private:
 
 	int status = man;
 };
-
-/*
-	for(int i = 0; i < 12; i++) {
-		const int player1X = brd.GetTileLocation (player1[i]).x;
-		const int player1Y = brd.GetTileLocation (player1[i]).y;
-		const int player2X = brd.GetTileLocation (player2[i]).x;
-		const int player2Y = brd.GetTileLocation (player2[i]).y;
-
-		players.Player2Draw (gfx, brd.GetTileLocation (player2[i]));
-		players.Player1Draw (gfx, brd.GetTileLocation (player1[i]));
-
-		SetState (player1X, player1Y);
-		SetState (player2X, player2Y);
-	}
-}
-
-void Game::SetState (const int& playerX, const int& playerY)
-{
-	const int mouseX = wnd.mouse.GetPosX ();
-	const int mouseY = wnd.mouse.GetPosY ();
-
-	if(mouseX <= playerX + 20 && mouseX >= playerX - 20 &&
-		mouseY <= playerY + 20 && mouseY >= playerY - 20) {
-		if(wnd.mouse.LeftIsPressed ()) {
-			DrawStatus (king, playerX, playerY);
-		} else if(wnd.mouse.RightIsPressed ()) {
-			DrawStatus (select, playerX, playerY);
-		} else {
-			DrawStatus (hover, playerX, playerY);
-		}
-	}
-}*/

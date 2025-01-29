@@ -26,12 +26,8 @@ Game::Game (MainWindow& wnd)
 	wnd (wnd),
 	gfx (wnd),
 	board (gfx),
-	location(116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
+	position(116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
 {
-	for(int i = 0; i < 12; ++i) {
-		player1_men[i].Update (board.GetTileLocation (i + 20), _man);
-		player2_men[i].Update (board.GetTileLocation (i), _man);
-	}
 }
 
 void Game::Go()
@@ -45,34 +41,40 @@ void Game::Go()
 void Game::UpdateModel()
 {
 	for(int i = 0; i < 12; i++) {
-		const Location player1 = player1_men[i].GetLocation (board, i + 20);
-		const Location player2 = player2_men[i].GetLocation (board, i);
-		const Location mouse_position(wnd.mouse.GetPos());
+		const Position position_p1 = player1[i].GetLocation (board, i + 20);
+		const Position mouse_position(wnd.mouse.GetPos());
 		
-		Location top_left1 = player1 - 24;
-		Location bottom_right1 = player1 + 24;
-		if(mouse_position >= top_left1 && mouse_position <= bottom_right1) {
-			player1_men[i].Update (player1, _hover);
-		} else {
-			player1_men[i].Update (player1, _man);
+		Position top_left1 = position_p1 - 30;
+		Position bottom_right1 = position_p1 + 30;
+		if(mouse_position >= top_left1 && mouse_position <= bottom_right1 && !player1[i].IsSelected()) {
+			player1[i].Update (position_p1, _hover);
+		} else if(!player1[i].IsSelected ()) {
+			player1[i].Update (position_p1, _man);
 		}
-
-		Location top_left2 = player2 - 24;
-		Location bottom_right2 = player2 + 24;
-		if(mouse_position >= top_left2 && mouse_position <= bottom_right2) {
-			player2_men[i].Update (player2, _hover);
-		} else {
-			player2_men[i].Update (player2, _man);
+		if(player1[i].GetStatus () == _hover && wnd.mouse.LeftIsPressed ()) {
+			for(int j = 0; j < 12; ++j) {
+				if(player1[j].GetStatus () == _select) {
+					player1[j].Update (position_p1, _man);
+				}
+			}
+			player1[i].Update (position_p1, _select);
+		}
+		if(player1[i].GetStatus () == _select && position_p1 != mouse_position) {
+			if(wnd.mouse.RightIsPressed ()) {
+				player1[i].Update (board.GetTileLocation(16), _man);
+			}
 		}
 	}
+
+	
 }
 
 void Game::ComposeFrame ()
 {
-	board.Draw (location);	
+	board.Draw (position);	
 
 	for(int i = 0; i < 12; ++i) {
-		player1_men[i].Draw (gfx, board.GetTileLocation (i + 20), p1, player1_men[i].GetStatus ());
-		player2_men[i].Draw (gfx, board.GetTileLocation (i), p2, player2_men[i].GetStatus ());
+		player1[i].Draw (gfx, board.GetTileLocation (i + 20), p1, player1[i].GetStatus ());
+
 	}
 }

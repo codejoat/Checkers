@@ -26,6 +26,7 @@
 #include "Colors.h"
 #include "Board.h"
 #include "Players.h"
+#include "Position.h"
 
 class Game
 {
@@ -45,7 +46,7 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-	static constexpr int total_men = 12;
+	static constexpr int n_men = 12;
 	static constexpr int p1 = 1;
 	static constexpr int p2 = 2;
 
@@ -57,9 +58,9 @@ private:
 	
 	Board board;
 	Mouse mouse;
-	Location location;
+	Position position;
 	
-	Players player1_men[total_men];
-	Players player2_men[total_men];
+	Players player1[n_men];
+	Players player2[n_men];
 	/********************************/
 };
