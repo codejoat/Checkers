@@ -10,10 +10,10 @@ struct Position {
 		y (set_y)
 	{
 	}
-	Position (const std::pair<int, int>& pos)
+	Position (const std::pair<int, int> position)
 		:
-		x (pos.first),
-		y (pos.second)
+		x (position.first),
+		y (position.second)
 	{
 	}
 

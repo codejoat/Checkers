@@ -27,6 +27,7 @@
 #include "Board.h"
 #include "Players.h"
 #include "Position.h"
+#include <chrono>
 
 class Game
 {
@@ -46,7 +47,9 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-	static constexpr int n_men = 12;
+	static constexpr int _total_men = 24;
+	static constexpr int _men_per_side = 12;
+	static constexpr int p0 = 0;
 	static constexpr int p1 = 1;
 	static constexpr int p2 = 2;
 
@@ -57,10 +60,10 @@ private:
 
 	
 	Board board;
-	Mouse mouse;
 	Position position;
 	
-	Players player1[n_men];
-	Players player2[n_men];
+	Players player[_total_men];
+	std::chrono::steady_clock::time_point last_click_time;
+	const std::chrono::milliseconds debounce_delay = std::chrono::milliseconds (1250);
 	/********************************/
 };

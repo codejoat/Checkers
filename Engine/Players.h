@@ -9,16 +9,23 @@ class Players {
 	
 private:
 	Position position;
+	int status = man;
+	int specific_tile;
 
 public:
 	Players () = default;
-	void Draw (Graphics& gfx, Position& position, const int which_player, const int status) const;
-	void Update (const Position& new_location, const int new_status);
+	Players (const Position& set_position);
+	void Draw (Graphics& gfx, const Position& position, const int status, const int which_player) const;
+	void InitPosition (const Position& set_position);
+	void InitStatus ();
+	void UpdateStatus (const int new_status);
+	void UpdatePosition (const int which_man, const Position& new_position);
+	Position GetPosition () const;
 	int GetStatus () const;
-	bool IsSelected () const;
-	Position GetLocation (const Board& board, const int which_man) const;
-	
-
+	void SetSelected ();
+	bool GetSelected () const;
+	void SetSpecificTile (const int set_tile);
+	int GetSpecificTile () const;
 
 private:
 	static constexpr int man = 0;
@@ -26,9 +33,9 @@ private:
 	static constexpr int hover = 2;
 	static constexpr int select = 3;
 	static constexpr int radius = 30;
+	static constexpr int total_men = 24;
+	static constexpr int men_per_side = 12;
 	
 	bool is_selected = false;
-	bool destroyed = false;
-
-	int status = man;
+	//bool destroyed = false;
 };

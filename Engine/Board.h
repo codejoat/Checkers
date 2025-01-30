@@ -12,6 +12,9 @@ public:
 	Position GetTileLocation (const int tile_number) const;
 	void SetTileLocation (const Position& tile_location, const int tile_number, bool for_locator);
 	void SetOccupied (const int tile_to_set, int which_player);
+	int GetOccupied (const int which_tile) const;
+	void SetTileHover (const int which_tile, bool set_hover);
+	bool GetTileHover (const int which_tile) const;
 
 
 private:
@@ -24,5 +27,6 @@ private:
 	Position tile_locator[n_black_tiles];
 	int occupied[n_black_tiles] = { 0 }; // 0 == not, 1 == p1, 2 == p2
 	Graphics& gfx;
+	bool tile_hover[32] = { false };
 };
 

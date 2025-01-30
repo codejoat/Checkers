@@ -76,3 +76,22 @@ void Board::SetOccupied (const int tile_to_set, int which_player)
 {
 	occupied[tile_to_set] = which_player;
 }
+
+int Board::GetOccupied (const int which_tile) const
+{
+	return occupied[which_tile];
+}
+
+void Board::SetTileHover (const int which_tile, bool set_hover)
+{
+	if(set_hover) {
+		tile_hover[which_tile] = true;
+	} else {
+		tile_hover[which_tile] = false;
+	}
+}
+
+bool Board::GetTileHover (const int which_tile) const
+{
+	return tile_hover[which_tile];
+}
