@@ -1,5 +1,5 @@
-/****************************************************************************************** 
- *	Chili DirectX Framework Version 16.07.20											  *	
+/******************************************************************************************
+ *	Chili DirectX Framework Version 16.07.20											  *
  *	Game.h																				  *
  *	Copyright 2016 PlanetChili.net <http://www.planetchili.net>							  *
  *																						  *
@@ -29,18 +29,22 @@
 #include "Position.h"
 #include <chrono>
 
-class Game
-{
+class Game {
 public:
-	Game( class MainWindow& wnd );
-	Game( const Game& ) = delete;
-	Game& operator=( const Game& ) = delete;
-	void Go();
+	Game (class MainWindow& wnd);
+	Game (const Game&) = delete;
+	Game& operator=(const Game&) = delete;
+	void Go ();
 private:
-	void ComposeFrame();
-	void UpdateModel();
+	void ComposeFrame ();
+	void UpdateModel ();
 	/********************************/
 	/*  User Functions              */
+	void UpdatePlayerStatus (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now);
+	void HandlePlayerMovement (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now);
+	void UpdateBoardHover (const Position& mouse_position);
+	bool IsPlayerSelected () const;
+	void DeselectAllPlayers ();
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -49,6 +53,9 @@ private:
 	/*  User Variables              */
 	static constexpr int _total_men = 24;
 	static constexpr int _men_per_side = 12;
+	static constexpr int _total_moveable_tiles = 32;
+	static constexpr int square_half_width = 35;
+	static constexpr int circle_half_width = 30;
 	static constexpr int p0 = 0;
 	static constexpr int p1 = 1;
 	static constexpr int p2 = 2;
@@ -58,11 +65,12 @@ private:
 	static constexpr int _hover = 2;
 	static constexpr int _select = 3;
 
-	
+
 	Board board;
 	Position position;
-	
+
 	Players player[_total_men];
+
 	std::chrono::steady_clock::time_point last_click_time;
 	const std::chrono::milliseconds debounce_delay = std::chrono::milliseconds (1250);
 	/********************************/

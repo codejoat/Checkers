@@ -7,15 +7,11 @@ struct Position {
 	Position (int set_x, int set_y)
 		:
 		x (set_x),
-		y (set_y)
-	{
-	}
+		y (set_y) { }
 	Position (const std::pair<int, int> position)
 		:
 		x (position.first),
-		y (position.second)
-	{
-	}
+		y (position.second) { }
 
 	bool operator == (const Position& rhs) const {
 		return this->x == rhs.x && this->y == rhs.y;

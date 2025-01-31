@@ -2,11 +2,10 @@
 
 #include "ChiliWin.h"
 
-class COMInitializer
-{
+class COMInitializer {
 public:
-	COMInitializer();
-	~COMInitializer();
+	COMInitializer ();
+	~COMInitializer ();
 private:
 	HRESULT hr;
 };

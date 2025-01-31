@@ -6,7 +6,7 @@
 #include "Mouse.h"
 
 class Players {
-	
+
 private:
 	Position position;
 	int status = man;
@@ -35,7 +35,7 @@ private:
 	static constexpr int radius = 30;
 	static constexpr int total_men = 24;
 	static constexpr int men_per_side = 12;
-	
+
 	bool is_selected = false;
 	//bool destroyed = false;
 };

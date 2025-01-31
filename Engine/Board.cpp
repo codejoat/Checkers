@@ -2,8 +2,7 @@
 
 Board::Board (Graphics& set_gfx)
 	:
-	gfx(set_gfx)
-{
+	gfx (set_gfx) {
 	// Build board and set all locations to center of squares
 	int tile_counter = 0;
 	int pattern_counter = 0;
@@ -23,8 +22,7 @@ Board::Board (Graphics& set_gfx)
 	}
 }
 
-void Board::Draw (const Position& position)
-{
+void Board::Draw (const Position& position) {
 	// Draw the checker pattern // The pattern loop is only there to ++end_of_row, else you get stripes, not checkers
 	for(int pattern = 0; pattern < tiles_per_row; ++pattern) {
 		for(int i = 0; i < tiles_per_row; ++i) {
@@ -52,19 +50,17 @@ void Board::Draw (const Position& position)
 				} else {
 					gfx.PutPixel (x, y, Color (95, 0, 15));
 				}
-				
+
 			}
 		}
 	}
 }
 
-Position Board::GetTileLocation (const int tile_number) const
-{
+Position Board::GetTileLocation (const int tile_number) const {
 	return Position (tile_locator[tile_number].x, tile_locator[tile_number].y);
 }
 
-void Board::SetTileLocation (const Position& tile_location, const int tile_number, bool for_locator)
-{
+void Board::SetTileLocation (const Position& tile_location, const int tile_number, bool for_locator) {
 	if(!for_locator) {
 		build_board[tile_number] = tile_location;
 	} else {
@@ -72,18 +68,15 @@ void Board::SetTileLocation (const Position& tile_location, const int tile_numbe
 	}
 }
 
-void Board::SetOccupied (const int tile_to_set, int which_player)
-{
+void Board::SetOccupied (const int tile_to_set, int which_player) {
 	occupied[tile_to_set] = which_player;
 }
 
-int Board::GetOccupied (const int which_tile) const
-{
+int Board::GetOccupied (const int which_tile) const {
 	return occupied[which_tile];
 }
 
-void Board::SetTileHover (const int which_tile, bool set_hover)
-{
+void Board::SetTileHover (const int which_tile, bool set_hover) {
 	if(set_hover) {
 		tile_hover[which_tile] = true;
 	} else {
@@ -91,7 +84,6 @@ void Board::SetTileHover (const int which_tile, bool set_hover)
 	}
 }
 
-bool Board::GetTileHover (const int which_tile) const
-{
+bool Board::GetTileHover (const int which_tile) const {
 	return tile_hover[which_tile];
 }

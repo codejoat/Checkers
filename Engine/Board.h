@@ -4,8 +4,7 @@
 #include "Colors.h"
 #include "Graphics.h"
 
-class Board
-{
+class Board {
 public:
 	Board (Graphics& set_gfx);
 	void Draw (const Position& position);

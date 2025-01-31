@@ -1,5 +1,5 @@
-/****************************************************************************************** 
- *	Chili DirectX Framework Version 16.07.20											  *	
+/******************************************************************************************
+ *	Chili DirectX Framework Version 16.07.20											  *
  *	Game.cpp																			  *
  *	Copyright 2016 PlanetChili.net <http://www.planetchili.net>							  *
  *																						  *
@@ -26,7 +26,7 @@ Game::Game (MainWindow& wnd)
 	wnd (wnd),
 	gfx (wnd),
 	board (gfx),
-	position(116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
+	position (116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
 {
 	for(int i = 0; i < _total_men; i++) {
 		if(i >= _men_per_side) {
@@ -42,86 +42,26 @@ Game::Game (MainWindow& wnd)
 	}
 }
 
-void Game::Go()
-{
-	gfx.BeginFrame();	
-	UpdateModel();
-	ComposeFrame();
-	gfx.EndFrame();
+void Game::Go () {
+	gfx.BeginFrame ();
+	UpdateModel ();
+	ComposeFrame ();
+	gfx.EndFrame ();
 }
 
-void Game::UpdateModel()
-{
+/////////////////////////////////////// MAIN WORK AREA //////////////////////////////////////////////////////////////////////////
+
+void Game::UpdateModel () {
 	const Position mouse_position (wnd.mouse.GetPos ());
 	auto now = std::chrono::steady_clock::now ();
 
-	for(int i = 0; i < _total_men; ++i){
+	UpdatePlayerStatus (mouse_position, now);
+	UpdateBoardHover (mouse_position);
+	HandlePlayerMovement (mouse_position, now);
 
-		const Position top_left = player[i].GetPosition () - 30;
-		const Position bottom_right = player[i].GetPosition () + 30;
-
-		if(mouse_position >= top_left && mouse_position <= bottom_right && !player[i].GetSelected()) {
-			player[i].UpdateStatus (_hover);
-			if(wnd.mouse.LeftIsPressed () && now - last_click_time > debounce_delay) {
-				for(int j = 0; j < _total_men; ++j) {
-					if(player[j].GetSelected ()) {
-						player[j].SetSelected ();
-						break;
-					}
-				}
-				player[i].SetSelected ();
-			}
-		} else {
-			player[i].UpdateStatus (_man);
-		}
-		for(int y = 0; y < _total_men; ++y) {
-			if(mouse_position >= top_left && mouse_position <= bottom_right && player[y].GetSelected ()) {
-				if(wnd.mouse.RightIsPressed ()) {
-					player[y].SetSelected ();
-				}
-			}
-		}
-	}
-	for(int i = 0; i < 32; ++i) {
-		const Position tile_top_left = board.GetTileLocation (i) - 35;
-		const Position tile_bottom_right = board.GetTileLocation (i) + 35;
-		bool selected_on_board = false;
-		
-		for(int x = 0; x < _total_men; ++x) {
-			if(player[x].GetSelected ()) {
-				selected_on_board = true;
-				break;
-			}
-		}
-		if(mouse_position >= tile_top_left && mouse_position <= tile_bottom_right && !board.GetOccupied(i) && selected_on_board) {
-			board.SetTileHover (i, true);
-		} else {
-			board.SetTileHover (i, false);
-		}
-
-		for(int k = 0; k < _total_men; ++k) {
-			for(int j = 0; j < 32; ++j) {
-				if(player[k].GetSelected ()) {
-					if(board.GetTileHover (j) && wnd.mouse.LeftIsPressed ()) {
-						last_click_time = now;
-						player[k].SetSelected ();
-						board.SetOccupied (player[k].GetSpecificTile (), p0);
-						player[k].UpdatePosition (k, board.GetTileLocation (j));
-						player[k].SetSpecificTile (j);
-						if(k >= 12) {
-							board.SetOccupied (j, p1);
-						} else {
-							board.SetOccupied (j, p2);
-						}
-					}
-				}
-			}
-		}
-	}
 }
 
-void Game::ComposeFrame ()
-{
+void Game::ComposeFrame () {
 	board.Draw (position);
 	for(int i = 0; i < _total_men; ++i) {
 		if(i >= _men_per_side) {
@@ -130,10 +70,82 @@ void Game::ComposeFrame ()
 			player[i].Draw (gfx, player[i].GetPosition (), player[i].GetStatus (), p2);
 		}
 	}
-	
+
 	for(int i = 0; i < 32; ++i) {
 		if(board.GetTileHover (i)) {
 			gfx.DrawRing (board.GetTileLocation (i).x, board.GetTileLocation (i).y, 10, 12, Colors::White);
+		}
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
+	for(int i = 0; i < _total_men; ++i) {
+		const Position top_left = player[i].GetPosition () - circle_half_width;
+		const Position bottom_right = player[i].GetPosition () + circle_half_width;
+
+		if(mouse_position >= top_left && mouse_position <= bottom_right && !player[i].GetSelected ()) {
+			player[i].UpdateStatus (_hover);
+			if(wnd.mouse.LeftIsPressed () && now - last_click_time > debounce_delay) {
+				DeselectAllPlayers ();
+				player[i].SetSelected ();
+			}
+		} else {
+			player[i].UpdateStatus (_man);
+		}
+
+		if(mouse_position >= top_left && mouse_position <= bottom_right && player[i].GetSelected ()) {
+			if(wnd.mouse.RightIsPressed ()) {
+				player[i].SetSelected ();
+			}
+		}
+	}
+}
+
+void Game::HandlePlayerMovement (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
+	for(int i = 0; i < _total_men; ++i) {
+		for(int j = 0; j < _total_moveable_tiles; ++j) {
+			if(player[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed ()) {
+				last_click_time = now;
+				player[i].SetSelected ();
+				board.SetOccupied (player[i].GetSpecificTile (), p0);
+				player[i].UpdatePosition (i, board.GetTileLocation (j));
+				player[i].SetSpecificTile (j);
+				board.SetOccupied (j, i >= 12 ? p1 : p2);
+			}
+		}
+	}
+}
+
+void Game::UpdateBoardHover (const Position& mouse_position) {
+	for(int i = 0; i < _total_moveable_tiles; ++i) {
+		const Position top_left = board.GetTileLocation (i) - square_half_width;
+		const Position bottom_right = board.GetTileLocation (i) + square_half_width;
+		bool selected_on_board = IsPlayerSelected ();
+
+		if(mouse_position >= top_left && mouse_position <= bottom_right && !board.GetOccupied (i) && selected_on_board) {
+			board.SetTileHover (i, true);
+		} else {
+			board.SetTileHover (i, false);
+		}
+	}
+}
+
+bool Game::IsPlayerSelected () const {
+	for(int i = 0; i < _total_men; ++i) {
+		if(player[i].GetSelected ()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Game::DeselectAllPlayers () { 
+	for(int i = 0; i < _total_men; ++i) {
+		if(player[i].GetSelected ()) {
+			player[i].SetSelected ();
+			break;
 		}
 	}
 }
