@@ -30,8 +30,6 @@ void Players::InitStatus () {
 	status = man;
 }
 
-
-
 void Players::UpdateStatus (const int new_status) {
 	if(is_selected) {
 		status = select;

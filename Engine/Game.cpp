@@ -58,10 +58,10 @@ void Game::UpdateModel () {
 	UpdatePlayerStatus (mouse_position, now);
 	UpdateBoardHover (mouse_position);
 	HandlePlayerMovement (mouse_position, now);
-
 }
 
 void Game::ComposeFrame () {
+	DrawTable ();
 	board.Draw (position);
 	for(int i = 0; i < _total_men; ++i) {
 		if(i >= _men_per_side) {
@@ -73,7 +73,7 @@ void Game::ComposeFrame () {
 
 	for(int i = 0; i < 32; ++i) {
 		if(board.GetTileHover (i)) {
-			gfx.DrawRing (board.GetTileLocation (i).x, board.GetTileLocation (i).y, 10, 12, Colors::White);
+			gfx.DrawRing (board.GetTileLocation (i).x, board.GetTileLocation (i).y, 10, 12, Colors::Green);
 		}
 	}
 }
@@ -81,7 +81,9 @@ void Game::ComposeFrame () {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
-	for(int i = 0; i < _total_men; ++i) {
+	const int group_begin = PlayerTurn () ? _men_per_side : 0;
+	const int group_end = PlayerTurn () ? _total_men : _men_per_side;
+		for(int i = group_begin; i < group_end; ++i) {
 		const Position top_left = player[i].GetPosition () - circle_half_width;
 		const Position bottom_right = player[i].GetPosition () + circle_half_width;
 
@@ -112,7 +114,9 @@ void Game::HandlePlayerMovement (const Position& mouse_position, const std::chro
 				board.SetOccupied (player[i].GetSpecificTile (), p0);
 				player[i].UpdatePosition (i, board.GetTileLocation (j));
 				player[i].SetSpecificTile (j);
+				player[i].UpdateStatus (_man);
 				board.SetOccupied (j, i >= 12 ? p1 : p2);
+				++move_counter;
 			}
 		}
 	}
@@ -146,6 +150,22 @@ void Game::DeselectAllPlayers () {
 		if(player[i].GetSelected ()) {
 			player[i].SetSelected ();
 			break;
+		}
+	}
+}
+
+bool Game::PlayerTurn () const { 
+	return (move_counter % 2 == 0) ? true : false;
+}
+
+void Game::DrawTable () {
+	for(int y = 0; y < gfx.ScreenHeight; ++y) {
+		for(int x = 0; x < gfx.ScreenWidth; ++x) {
+			if(x > 109 && x < 689 && y > 9 && y < 589) {
+				gfx.PutPixel (x, y, Colors::Black);
+			} else {
+				gfx.PutPixel (x, y, Color (15, 45, 15));
+			}
 		}
 	}
 }

@@ -45,6 +45,8 @@ private:
 	void UpdateBoardHover (const Position& mouse_position);
 	bool IsPlayerSelected () const;
 	void DeselectAllPlayers ();
+	bool PlayerTurn () const;
+	void DrawTable ();
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -59,19 +61,18 @@ private:
 	static constexpr int p0 = 0;
 	static constexpr int p1 = 1;
 	static constexpr int p2 = 2;
-
 	static constexpr int _man = 0;
 	static constexpr int _king = 1;
 	static constexpr int _hover = 2;
 	static constexpr int _select = 3;
 
+	int move_counter = 0;
 
 	Board board;
 	Position position;
-
 	Players player[_total_men];
 
 	std::chrono::steady_clock::time_point last_click_time;
-	const std::chrono::milliseconds debounce_delay = std::chrono::milliseconds (1250);
+	const std::chrono::milliseconds debounce_delay = std::chrono::milliseconds (200);
 	/********************************/
 };
