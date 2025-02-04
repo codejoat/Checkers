@@ -27,7 +27,10 @@
 #include "Board.h"
 #include "Players.h"
 #include "Position.h"
+#include "Status.h"
 #include <chrono>
+#include <vector>
+#include <array>
 
 class Game {
 public:
@@ -47,6 +50,10 @@ private:
 	void DeselectAllPlayers ();
 	bool PlayerTurn () const;
 	void DrawTable ();
+	void CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king);
+	void DrawMoveableTile (int board_x, int board_y);
+	bool GetPossibleMoves (const int which_tile) const;
+	void ResetCanMoveTo ();
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -56,23 +63,52 @@ private:
 	static constexpr int _total_men = 24;
 	static constexpr int _men_per_side = 12;
 	static constexpr int _total_moveable_tiles = 32;
-	static constexpr int square_half_width = 35;
-	static constexpr int circle_half_width = 30;
-	static constexpr int p0 = 0;
-	static constexpr int p1 = 1;
-	static constexpr int p2 = 2;
-	static constexpr int _man = 0;
-	static constexpr int _king = 1;
-	static constexpr int _hover = 2;
-	static constexpr int _select = 3;
+	static constexpr int _square_half_width = 35;
+	static constexpr int _circle_half_width = 30;
 
-	int move_counter = 0;
+	int _move_counter = 0;
+	std::array<bool, _total_moveable_tiles> _can_move_to = { false };
 
 	Board board;
 	Position position;
-	Players player[_total_men];
+	std::array<Players, _total_men> players;
 
-	std::chrono::steady_clock::time_point last_click_time;
+	std::chrono::steady_clock::time_point _last_click_time;
 	const std::chrono::milliseconds debounce_delay = std::chrono::milliseconds (200);
+
+
+	// Define all potential moves for system to check
+	const std::vector<std::vector<int>> p2_moves = {
+		{4, 5}, {5, 6}, {6, 7}, {7},         // 0-3
+		{8}, {8, 9}, {9, 10}, {10, 11},      // 4-7
+		{12, 13}, {13, 14}, {14, 15}, {15},  // 8-11
+		{16}, {16, 17}, {17, 18}, {18, 19},  // 12-15
+		{20, 21}, {21, 22}, {22, 23}, {23},  // 16-19
+		{24}, {24, 25}, {25, 26}, {26, 27},  // 20-23
+		{28, 29}, {29, 30}, {30, 31}, {31},  // 24-27
+		{24}, {24, 25}, {25, 26}, {26, 27}   // 28-31
+	};
+	
+	const std::vector<std::vector<int>> p1_moves = {
+		{4, 5}, {5, 6}, {6, 7}, {7},         // 0-3
+		{0}, {0, 1}, {1, 2}, {2, 3},         // 4-7
+		{4, 5}, {5, 6}, {6, 7}, {7},         // 8-11
+		{8}, {8, 9}, {9, 10}, {10, 11},      // 12-15
+		{12, 13}, {13, 14}, {14, 15}, {15},  // 16-19
+		{16}, {16, 17}, {17, 18}, {18, 19},  // 20-23
+		{20, 21}, {21, 22}, {22, 23}, {23},  // 24-27
+		{24}, {24, 25}, {25, 26}, {26, 27}   // 28-31
+		};
+
+	const std::vector<std::vector<int>> king_moves = {
+		{4, 5}, {5, 6}, {6, 7}, {7},                                     // 0-3
+		{0, 8}, {0, 1, 8, 9}, {1, 2, 9, 10}, {2, 3, 10, 11},             // 4-7
+		{4, 5, 12, 13}, {5, 6, 13, 14}, {6, 7, 14, 15}, {7, 15},         // 8-11
+		{8, 16}, {8, 9, 16, 17}, {9, 10, 17, 18}, {10, 11, 18, 19},      // 12-15
+		{12, 13, 20, 21}, {13, 14, 21, 22}, {14, 15, 22, 23}, {15, 23},  // 16-19
+		{16, 24}, {16, 17, 24, 25}, {17, 18, 25, 26}, {18, 19, 26, 27},  // 20-23
+		{20, 21, 28, 29}, {21, 22, 29, 30}, {22, 23, 30, 31}, {23, 31},  // 24-27
+		{24}, {24, 25}, {25, 26}, {26, 27}                               // 28-31
+	};
 	/********************************/
 };

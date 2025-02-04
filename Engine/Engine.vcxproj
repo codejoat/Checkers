@@ -152,6 +152,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="SoundEffect.h" />
+    <ClInclude Include="Status.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Board.cpp" />

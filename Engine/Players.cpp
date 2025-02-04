@@ -4,21 +4,28 @@ Players::Players (const Position& set_position)
 	:
 	position (set_position) { }
 
-void Players::Draw (Graphics& gfx, const Position& position, const int status, const int which_player) const {
+void Players::Draw (Graphics& gfx, const Position& position, const PieceType status, const PlayerType which_player) const {
 	switch(which_player) {
-	case 1: gfx.DrawCircle (position.x, position.y, radius, Color (0, 0, 0));
+	case PlayerType::p1: gfx.DrawCircle (position.x, position.y, radius, Color (0, 0, 0));
 		gfx.DrawCircle (position.x, position.y, radius - 5, Color (5, 5, 5)); break;
-	case 2: gfx.DrawCircle (position.x, position.y, radius, Color (185, 0, 0));
+	case PlayerType::p2: gfx.DrawCircle (position.x, position.y, radius, Color (185, 0, 0));
 		gfx.DrawCircle (position.x, position.y, radius - 5, Color (165, 10, 10)); break;
-	default: gfx.DrawCircle (position.x, position.y, radius, Color (105, 105, 105));
+	default:break;
 	}
 
 	switch(status) {
-	case man: break;
-	case king: gfx.DrawRectangle (position.x - 14, position.y - 14, 28, 28, Color (150, 150, 150)); break;
-	case hover: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Yellow); break;
-	case select: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Cyan); break;
-	default: gfx.DrawCircle (position.x, position.y, radius / 2, Color (105, 105, 105));
+	case PieceType::man: break;
+	case PieceType::king: gfx.DrawRectangle (position.x - 14, position.y - 14, 28, 28, Color (150, 150, 150)); break;
+	default:break;
+	}
+}
+
+void Players::DrawSelectStatus (Graphics& gfx, const Position& position, const PlayerStatus select_status) const { 
+	switch(select_status) {
+	case PlayerStatus::non:break;
+	case PlayerStatus::hover: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Yellow); break;
+	case PlayerStatus::select: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Cyan); break;
+	default:break;
 	}
 }
 
@@ -27,23 +34,23 @@ void Players::InitPosition (const Position& set_position) {
 }
 
 void Players::InitStatus () {
-	status = man;
+	status = PieceType::man;
 }
 
-void Players::UpdateStatus (const int new_status) {
-	if(is_selected) {
-		status = select;
-	} else {
-		status = new_status;
-	}
+void Players::UpdateStatus (const PieceType new_status) {
+	status = new_status;
+}
+
+void Players::UpdateSelectStatus (const PlayerStatus new_select_status) {
+	select_status = new_select_status;
 }
 
 void Players::UpdatePosition (const int which_man, const Position& new_position) {
 	position = new_position;
 }
 
-int Players::GetStatus () const {
-	return status;
+void Players::SetSpecificTile (const int set_tile) {
+	specific_tile = set_tile;
 }
 
 void Players::SetSelected () {
@@ -58,14 +65,19 @@ Position Players::GetPosition () const {
 	return position;
 }
 
-bool Players::GetSelected () const {
-	return is_selected;
+PieceType Players::GetStatus () const {
+	return status;
 }
 
-void Players::SetSpecificTile (const int set_tile) {
-	specific_tile = set_tile;
+PlayerStatus Players::GetSelectStatus () const {
+	return select_status;
+}
+
+bool Players::GetSelected () const {
+	return is_selected;
 }
 
 int Players::GetSpecificTile () const {
 	return specific_tile;
 }
+

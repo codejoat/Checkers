@@ -30,15 +30,15 @@ Game::Game (MainWindow& wnd)
 {
 	for(int i = 0; i < _total_men; i++) {
 		if(i >= _men_per_side) {
-			player[i].InitPosition (board.GetTileLocation (i + 8));
-			player[i].SetSpecificTile (i + 8);
-			board.SetOccupied (i + 8, p1);
+			players[i].InitPosition (board.GetTileLocation (i + 8));
+			players[i].SetSpecificTile (i + 8);
+			board.SetOccupiedBy (i + 8, PlayerType::p1);
 		} else {
-			player[i].InitPosition (board.GetTileLocation (i));
-			player[i].SetSpecificTile (i);
-			board.SetOccupied (i, p2);
+			players[i].InitPosition (board.GetTileLocation (i));
+			players[i].SetSpecificTile (i);
+			board.SetOccupiedBy (i, PlayerType::p2);
 		}
-		player[i].InitStatus ();
+		players[i].InitStatus ();
 	}
 }
 
@@ -49,7 +49,9 @@ void Game::Go () {
 	gfx.EndFrame ();
 }
 
-/////////////////////////////////////// MAIN WORK AREA //////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////// MAIN OUTPUT AREA //////////////////////////////////////////////////////////////////////////
+
 
 void Game::UpdateModel () {
 	const Position mouse_position (wnd.mouse.GetPos ());
@@ -65,41 +67,60 @@ void Game::ComposeFrame () {
 	board.Draw (position);
 	for(int i = 0; i < _total_men; ++i) {
 		if(i >= _men_per_side) {
-			player[i].Draw (gfx, player[i].GetPosition (), player[i].GetStatus (), p1);
+			players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p1);
 		} else {
-			player[i].Draw (gfx, player[i].GetPosition (), player[i].GetStatus (), p2);
+			players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p2);
 		}
 	}
+	for(int i = 0; i < _total_men; ++i) {
+		players[i].DrawSelectStatus (gfx, players[i].GetPosition (), players[i].GetSelectStatus ());
+	}
 
-	for(int i = 0; i < 32; ++i) {
-		if(board.GetTileHover (i)) {
-			gfx.DrawRing (board.GetTileLocation (i).x, board.GetTileLocation (i).y, 10, 12, Colors::Green);
+	for(int i = 0; i < _total_moveable_tiles; ++i) {
+		for(int j = 0; j < _total_men; ++j) {
+			if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) != PlayerType::p1) &&
+				(board.GetOccupiedBy (i) != PlayerType::p2) && players[j].GetSelected ()) {
+				DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y);
+			}
 		}
 	}
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
 	const int group_begin = PlayerTurn () ? _men_per_side : 0;
 	const int group_end = PlayerTurn () ? _total_men : _men_per_side;
-		for(int i = group_begin; i < group_end; ++i) {
-		const Position top_left = player[i].GetPosition () - circle_half_width;
-		const Position bottom_right = player[i].GetPosition () + circle_half_width;
+	
+	for(int i = group_begin; i < group_end; ++i) {
+		
+		const Position top_left = players[i].GetPosition () - _circle_half_width;
+		const Position bottom_right = players[i].GetPosition () + _circle_half_width;
+		PlayerType player_check = (i >= 12) ? PlayerType::p1 : PlayerType::p2;
 
-		if(mouse_position >= top_left && mouse_position <= bottom_right && !player[i].GetSelected ()) {
-			player[i].UpdateStatus (_hover);
-			if(wnd.mouse.LeftIsPressed () && now - last_click_time > debounce_delay) {
-				DeselectAllPlayers ();
-				player[i].SetSelected ();
-			}
-		} else {
-			player[i].UpdateStatus (_man);
+		//if(players.GetStatus () == Destroyed) { continue }; Something like this.
+
+		if(mouse_position >= top_left && mouse_position <= bottom_right && !players[i].GetSelected ()) {
+			players[i].UpdateSelectStatus (PlayerStatus::hover);
+		} else if(!players[i].GetSelected()) {
+			players[i].UpdateSelectStatus (PlayerStatus::non);
 		}
-
-		if(mouse_position >= top_left && mouse_position <= bottom_right && player[i].GetSelected ()) {
+		
+		if(players[i].GetSelectStatus () == PlayerStatus::hover && wnd.mouse.LeftIsPressed ()) {
+			DeselectAllPlayers ();
+			players[i].SetSelected ();
+			players[i].UpdateSelectStatus (PlayerStatus::select);
+			ResetCanMoveTo ();
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), false); // TODO set boolean for players[i].GetStatus()
+		}
+			
+		if(mouse_position >= top_left && mouse_position <= bottom_right && players[i].GetSelected ()) {
 			if(wnd.mouse.RightIsPressed ()) {
-				player[i].SetSelected ();
+				players[i].UpdateSelectStatus (PlayerStatus::non);
+				players[i].SetSelected ();
+				ResetCanMoveTo ();
 			}
 		}
 	}
@@ -108,15 +129,16 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 void Game::HandlePlayerMovement (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
 	for(int i = 0; i < _total_men; ++i) {
 		for(int j = 0; j < _total_moveable_tiles; ++j) {
-			if(player[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed ()) {
-				last_click_time = now;
-				player[i].SetSelected ();
-				board.SetOccupied (player[i].GetSpecificTile (), p0);
-				player[i].UpdatePosition (i, board.GetTileLocation (j));
-				player[i].SetSpecificTile (j);
-				player[i].UpdateStatus (_man);
-				board.SetOccupied (j, i >= 12 ? p1 : p2);
-				++move_counter;
+			if(players[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed () && GetPossibleMoves(j)) {
+				_last_click_time = now;
+				players[i].SetSelected ();
+				players[i].UpdatePosition (i, board.GetTileLocation (j));
+				board.SetOccupiedBy (players[i].GetSpecificTile (), PlayerType::p0);
+				players[i].SetSpecificTile (j);
+				players[i].UpdateSelectStatus (PlayerStatus::non);
+				board.SetOccupiedBy (j, (i >= 12 ? PlayerType::p1 : PlayerType::p2));
+				ResetCanMoveTo ();
+				++_move_counter;
 			}
 		}
 	}
@@ -124,11 +146,11 @@ void Game::HandlePlayerMovement (const Position& mouse_position, const std::chro
 
 void Game::UpdateBoardHover (const Position& mouse_position) {
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
-		const Position top_left = board.GetTileLocation (i) - square_half_width;
-		const Position bottom_right = board.GetTileLocation (i) + square_half_width;
+		const Position top_left = board.GetTileLocation (i) - _square_half_width;
+		const Position bottom_right = board.GetTileLocation (i) + _square_half_width;
 		bool selected_on_board = IsPlayerSelected ();
 
-		if(mouse_position >= top_left && mouse_position <= bottom_right && !board.GetOccupied (i) && selected_on_board) {
+		if(mouse_position >= top_left && mouse_position <= bottom_right && (board.GetOccupiedBy (i) == PlayerType::p0) && selected_on_board) {
 			board.SetTileHover (i, true);
 		} else {
 			board.SetTileHover (i, false);
@@ -138,24 +160,24 @@ void Game::UpdateBoardHover (const Position& mouse_position) {
 
 bool Game::IsPlayerSelected () const {
 	for(int i = 0; i < _total_men; ++i) {
-		if(player[i].GetSelected ()) {
+		if(players[i].GetSelected ()) {
 			return true;
 		}
 	}
 	return false;
 }
 
-void Game::DeselectAllPlayers () { 
+void Game::DeselectAllPlayers () {
 	for(int i = 0; i < _total_men; ++i) {
-		if(player[i].GetSelected ()) {
-			player[i].SetSelected ();
+		if(players[i].GetSelected ()) {
+			players[i].SetSelected ();
 			break;
 		}
 	}
 }
 
-bool Game::PlayerTurn () const { 
-	return (move_counter % 2 == 0) ? true : false;
+bool Game::PlayerTurn () const {
+	return (_move_counter % 2 == 0) ? true : false;
 }
 
 void Game::DrawTable () {
@@ -167,5 +189,29 @@ void Game::DrawTable () {
 				gfx.PutPixel (x, y, Color (15, 45, 15));
 			}
 		}
+	}
+}
+
+void Game::CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king) {
+	const auto& moves = is_king ? king_moves : (which_player == PlayerType::p1 ? p1_moves : p2_moves);
+	const int tile = players[which_man].GetSpecificTile ();
+	if(tile < 0 || tile >= moves.size ()) return;
+
+	for(int move : moves[tile]) {
+		_can_move_to[move] = true;
+	}
+}
+
+void Game::DrawMoveableTile (int board_x, int board_y) {
+	gfx.DrawRing (board_x, board_y, 10, 12, Colors::Green);
+}
+
+bool Game::GetPossibleMoves (const int which_tile) const {
+	return _can_move_to[which_tile];
+}
+
+void Game::ResetCanMoveTo () {
+	for(int i = 0; i < _total_moveable_tiles; ++i) {
+		_can_move_to[i] = false;
 	}
 }

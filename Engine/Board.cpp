@@ -1,4 +1,5 @@
 #include "Board.h"
+#include "Players.h"
 
 Board::Board (Graphics& set_gfx)
 	:
@@ -26,8 +27,8 @@ void Board::Draw (const Position& position) {
 	// Draw the checker pattern // The pattern loop is only there to ++end_of_row, else you get stripes, not checkers
 	for(int pattern = 0; pattern < tiles_per_row; ++pattern) {
 		for(int i = 0; i < tiles_per_row; ++i) {
-			int x = build_board[i + pattern * tiles_per_row].x - tile_dimension / 2;
-			int y = build_board[i + pattern * tiles_per_row].y - tile_dimension / 2;
+			int x = build_board[i + static_cast<std::array<Position, 64Ui64>::size_type>(pattern) * tiles_per_row].x - tile_dimension / 2;
+			int y = build_board[i + static_cast<std::array<Position, 64Ui64>::size_type>(pattern) * tiles_per_row].y - tile_dimension / 2;
 
 			if((i + pattern) % 2 == 0) {
 				gfx.DrawRectangle (x, y, tile_dimension, tile_dimension, Color (100, 0, 25));
@@ -68,12 +69,12 @@ void Board::SetTileLocation (const Position& tile_location, const int tile_numbe
 	}
 }
 
-void Board::SetOccupied (const int tile_to_set, int which_player) {
-	occupied[tile_to_set] = which_player;
+void Board::SetOccupiedBy (const int tile_to_set, PlayerType which_player) { 
+	occupied_by[tile_to_set] = which_player;
 }
 
-int Board::GetOccupied (const int which_tile) const {
-	return occupied[which_tile];
+PlayerType Board::GetOccupiedBy (const int which_tile) const {
+	return occupied_by[which_tile];
 }
 
 void Board::SetTileHover (const int which_tile, bool set_hover) {
