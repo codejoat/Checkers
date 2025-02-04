@@ -54,6 +54,8 @@ private:
 	void DrawMoveableTile (int board_x, int board_y);
 	bool GetPossibleMoves (const int which_tile) const;
 	void ResetCanMoveTo ();
+	void CheckForKing ();
+	bool HasMoves ();
 	/********************************/
 private:
 	MainWindow& wnd;

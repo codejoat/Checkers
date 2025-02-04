@@ -15,7 +15,11 @@ void Players::Draw (Graphics& gfx, const Position& position, const PieceType sta
 
 	switch(status) {
 	case PieceType::man: break;
-	case PieceType::king: gfx.DrawRectangle (position.x - 14, position.y - 14, 28, 28, Color (150, 150, 150)); break;
+	case PieceType::king: 
+		switch(which_player) {
+		case PlayerType::p1:gfx.DrawRing (position.x, position.y, 10, 14, Color (175, 0, 175)); break;
+		case PlayerType::p2:gfx.DrawRing (position.x, position.y, 10, 14, Color (175, 175, 0)); break;
+		}
 	default:break;
 	}
 }
@@ -23,8 +27,8 @@ void Players::Draw (Graphics& gfx, const Position& position, const PieceType sta
 void Players::DrawSelectStatus (Graphics& gfx, const Position& position, const PlayerStatus select_status) const { 
 	switch(select_status) {
 	case PlayerStatus::non:break;
-	case PlayerStatus::hover: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Yellow); break;
-	case PlayerStatus::select: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Cyan); break;
+	case PlayerStatus::hover: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Gray); break;
+	case PlayerStatus::select: gfx.DrawRing (position.x, position.y, 28, 30, Colors::Green); break;
 	default:break;
 	}
 }

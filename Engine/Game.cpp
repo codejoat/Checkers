@@ -57,6 +57,7 @@ void Game::UpdateModel () {
 	const Position mouse_position (wnd.mouse.GetPos ());
 	auto now = std::chrono::steady_clock::now ();
 
+	CheckForKing ();
 	UpdatePlayerStatus (mouse_position, now);
 	UpdateBoardHover (mouse_position);
 	HandlePlayerMovement (mouse_position, now);
@@ -99,11 +100,16 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 		const Position top_left = players[i].GetPosition () - _circle_half_width;
 		const Position bottom_right = players[i].GetPosition () + _circle_half_width;
 		PlayerType player_check = (i >= 12) ? PlayerType::p1 : PlayerType::p2;
-
+		bool is_king = (PieceType::king == players[i].GetStatus () ? true : false);
+		
 		//if(players.GetStatus () == Destroyed) { continue }; Something like this.
 
 		if(mouse_position >= top_left && mouse_position <= bottom_right && !players[i].GetSelected ()) {
-			players[i].UpdateSelectStatus (PlayerStatus::hover);
+			ResetCanMoveTo ();
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
+			if(HasMoves ()) {
+				players[i].UpdateSelectStatus (PlayerStatus::hover);
+			}
 		} else if(!players[i].GetSelected()) {
 			players[i].UpdateSelectStatus (PlayerStatus::non);
 		}
@@ -113,7 +119,7 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 			players[i].SetSelected ();
 			players[i].UpdateSelectStatus (PlayerStatus::select);
 			ResetCanMoveTo ();
-			CanMoveTo (player_check, i, players[i].GetSpecificTile (), false); // TODO set boolean for players[i].GetStatus()
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
 		}
 			
 		if(mouse_position >= top_left && mouse_position <= bottom_right && players[i].GetSelected ()) {
@@ -198,7 +204,9 @@ void Game::CanMoveTo (const PlayerType which_player, const int which_man, const 
 	if(tile < 0 || tile >= moves.size ()) return;
 
 	for(int move : moves[tile]) {
-		_can_move_to[move] = true;
+		if(board.GetOccupiedBy (move) == PlayerType::p0) {
+			_can_move_to[move] = true;
+		}
 	}
 }
 
@@ -214,4 +222,34 @@ void Game::ResetCanMoveTo () {
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
 		_can_move_to[i] = false;
 	}
+}
+
+void Game::CheckForKing () {
+	for(int i = 0; i < _total_men; ++i) {
+		if(i >= _men_per_side) {
+			if(players[i].GetSpecificTile () == 0 ||
+				players[i].GetSpecificTile () == 1 ||
+				players[i].GetSpecificTile () == 2 ||
+				players[i].GetSpecificTile () == 3) {
+				players[i].UpdateStatus (PieceType::king);
+			}
+		} else {
+			if(players[i].GetSpecificTile () == 28 ||
+				players[i].GetSpecificTile () == 29 ||
+				players[i].GetSpecificTile () == 30 ||
+				players[i].GetSpecificTile () == 31) {
+				players[i].UpdateStatus (PieceType::king);
+			}
+		}
+	}
+}
+
+bool Game::HasMoves () {
+	for(int i = 0; i < _total_moveable_tiles; ++i) {
+		if(_can_move_to[i]) {
+			return true;
+			break;
+		}
+	}
+	return false;
 }
