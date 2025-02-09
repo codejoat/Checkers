@@ -79,9 +79,8 @@ void Game::ComposeFrame () {
 
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
 		for(int j = 0; j < _total_men; ++j) {
-			if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) != PlayerType::p1) &&
-				(board.GetOccupiedBy (i) != PlayerType::p2) && players[j].GetSelected ()) {
-				DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y);
+			if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) == PlayerType::p0) && players[j].GetSelected ()) {
+				DrawMoveableTile (board.GetTileLocation(i).x, board.GetTileLocation(i).y);
 			}
 		}
 	}
@@ -105,21 +104,21 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 		//if(players.GetStatus () == Destroyed) { continue }; Something like this.
 
 		if(mouse_position >= top_left && mouse_position <= bottom_right && !players[i].GetSelected ()) {
-			ResetCanMoveTo ();
-			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
-			if(HasMoves ()) {
-				players[i].UpdateSelectStatus (PlayerStatus::hover);
-			}
+			players[i].UpdateSelectStatus (PlayerStatus::hover);
 		} else if(!players[i].GetSelected()) {
 			players[i].UpdateSelectStatus (PlayerStatus::non);
 		}
 		
 		if(players[i].GetSelectStatus () == PlayerStatus::hover && wnd.mouse.LeftIsPressed ()) {
-			DeselectAllPlayers ();
-			players[i].SetSelected ();
-			players[i].UpdateSelectStatus (PlayerStatus::select);
 			ResetCanMoveTo ();
 			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
+			if(HasMoves ()) {
+				DeselectAllPlayers ();
+				players[i].SetSelected ();
+				players[i].UpdateSelectStatus (PlayerStatus::select);
+			} else {
+				DeselectAllPlayers ();
+			}
 		}
 			
 		if(mouse_position >= top_left && mouse_position <= bottom_right && players[i].GetSelected ()) {
@@ -199,11 +198,20 @@ void Game::DrawTable () {
 }
 
 void Game::CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king) {
-	const auto& moves = is_king ? king_moves : (which_player == PlayerType::p1 ? p1_moves : p2_moves);
-	const int tile = players[which_man].GetSpecificTile ();
-	if(tile < 0 || tile >= moves.size ()) return;
+	const auto & jumps = is_king ? king_jumps : (which_player == PlayerType::p1 ? p1_jumps : p2_jumps);
+	const auto & moves = is_king ? king_moves : (which_player == PlayerType::p1 ? p1_moves : p2_moves);
 
-	for(int move : moves[tile]) {
+	// Check for jump moves
+	for(int jump : jumps[which_tile]) {
+		int tile_to_jump = GetJumpTile (which_tile, jump);
+		if(board.GetOccupiedBy (tile_to_jump) == (which_player == PlayerType::p1 ? PlayerType::p2 : PlayerType::p1) &&
+			board.GetOccupiedBy (jump) == PlayerType::p0) {
+			_can_move_to[jump] = true;
+		}
+	}
+
+	// Check for regular moves
+	for(int move : moves[which_tile]) {
 		if(board.GetOccupiedBy (move) == PlayerType::p0) {
 			_can_move_to[move] = true;
 		}
@@ -248,8 +256,54 @@ bool Game::HasMoves () {
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
 		if(_can_move_to[i]) {
 			return true;
-			break;
 		}
 	}
 	return false;
+}
+
+int Game::GetJumpTile (const int start_tile, const int end_tile) const {
+	switch(start_tile) {
+	case 0:return 5;
+	case 1:if(end_tile == 8) { return 5; } else if(end_tile == 10) { return 6; }
+	case 2:if(end_tile == 9) { return 6; } else if(end_tile == 11) { return 7; }
+	case 3:return 7;
+	case 4:return 8;
+	case 5:if(end_tile == 12) { return 8; } else if(end_tile == 14) { return 9; }
+	case 6:if(end_tile == 13) { return 9; } else if(end_tile == 15) { return 10; }
+	case 7:return 10;
+	case 8:if(end_tile == 1) { return 5; } else if(end_tile == 17) { return 13; }
+	case 9:if(end_tile == 0) { return 5; } else if(end_tile == 2) { return 6; }
+			else if(end_tile == 16) { return 13; } else if(end_tile == 18) { return 14; }
+	case 10:if(end_tile == 1) { return 6; } else if(end_tile == 3) { return 7; }
+			 else if(end_tile == 17) { return 14; } else if(end_tile == 19) { return 15; }
+	case 11:if(end_tile == 2) { return 7; } else if(end_tile == 18) { return 15; }
+	case 12:if(end_tile == 5) { return 8; } else if(end_tile == 21) { return 16; }
+	case 13:if(end_tile == 4) { return 8; } else if(end_tile == 6) { return 9; }
+			 else if(end_tile == 20) { return 16; } else if(end_tile == 22) { return 17; }
+	case 14:if(end_tile == 5) { return 9; } else if(end_tile == 7) { return 10; }
+			 else if(end_tile == 21) { return 17; } else if(end_tile == 23) { return 18; }
+	case 15:if(end_tile == 6) { return 10; } else if(end_tile == 22) { return 18; }
+	case 16:if(end_tile == 9) { return 13; } else if(end_tile == 25) { return 21; }
+	case 17:if(end_tile == 8) { return 13; } else if(end_tile == 10) { return 14; }
+			 else if(end_tile == 24) { return 21; } else if(end_tile == 26) { return 22; }
+	case 18:if(end_tile == 9) { return 14; } else if(end_tile == 11) { return 15; }
+			 else if(end_tile == 25) { return 22; } else if(end_tile == 27) { return 23; }
+	case 19:if(end_tile == 10) { return 15; } else if(end_tile == 26) { return 23; }
+	case 20:if(end_tile == 13) { return 16; } else if(end_tile == 29) { return 24; }
+	case 21:if(end_tile == 12) { return 16; } else if(end_tile == 14) { return 17; }
+			 else if(end_tile == 28) { return 24; } else if(end_tile == 30) { return 25; }
+	case 22:if(end_tile == 13) { return 17; } else if(end_tile == 15) { return 18; }
+			 else if(end_tile == 29) { return 25; } else if(end_tile == 31) { return 26; }
+	case 23:if(end_tile == 14) { return 18; } else if(end_tile == 30) { return 26; }
+	case 24:return 21;
+	case 25:if(end_tile == 16) { return 21; } else if(end_tile == 18) { return 22; }
+	case 26:if(end_tile == 17) { return 22; } else if(end_tile == 19) { return 23; }
+	case 27:return 23;
+	case 28:return 24;
+	case 29:if(end_tile == 20) { return 24; } else if(end_tile == 22) { return 25; }
+	case 30:if(end_tile == 21) { return 25; } else if(end_tile == 23) { return 26; }
+	case 31:return 26;
+	default:return -1;
+	}
+	return 0;
 }

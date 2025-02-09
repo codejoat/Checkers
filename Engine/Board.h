@@ -32,4 +32,3 @@ private:
 	
 	Graphics& gfx;
 };
-
