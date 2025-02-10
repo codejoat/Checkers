@@ -66,11 +66,14 @@ void Game::UpdateModel () {
 void Game::ComposeFrame () {
 	DrawTable ();
 	board.Draw (position);
+	
 	for(int i = 0; i < _total_men; ++i) {
-		if(i >= _men_per_side) {
-			players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p1);
-		} else {
-			players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p2);
+		if(players[i].GetStatus () != PieceType::destroyed) {
+			if(i >= _men_per_side) {
+				players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p1);
+			} else {
+				players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p2);
+			}
 		}
 	}
 	for(int i = 0; i < _total_men; ++i) {
@@ -101,7 +104,7 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 		PlayerType player_check = (i >= 12) ? PlayerType::p1 : PlayerType::p2;
 		bool is_king = (PieceType::king == players[i].GetStatus () ? true : false);
 		
-		//if(players.GetStatus () == Destroyed) { continue }; Something like this.
+		if(players[i].GetStatus () == PieceType::destroyed) { continue; }
 
 		if(mouse_position >= top_left && mouse_position <= bottom_right && !players[i].GetSelected ()) {
 			players[i].UpdateSelectStatus (PlayerStatus::hover);
@@ -136,6 +139,13 @@ void Game::HandlePlayerMovement (const Position& mouse_position, const std::chro
 		for(int j = 0; j < _total_moveable_tiles; ++j) {
 			if(players[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed () && GetPossibleMoves(j)) {
 				_last_click_time = now;
+				int jump_check = abs (players[i].GetSpecificTile () - j);
+				int destroy_it = -1;
+				if(jump_check > 5) {
+					destroy_it = GetJumpTile (players[i].GetSpecificTile (), j);
+					DestroyIt (destroy_it);
+					board.SetOccupiedBy (destroy_it, PlayerType::p0);
+				}
 				players[i].SetSelected ();
 				players[i].UpdatePosition (i, board.GetTileLocation (j));
 				board.SetOccupiedBy (players[i].GetSpecificTile (), PlayerType::p0);
@@ -306,4 +316,13 @@ int Game::GetJumpTile (const int start_tile, const int end_tile) const {
 	default:return -1;
 	}
 	return 0;
+}
+
+void Game::DestroyIt (const int which_tile) { 
+	for(int i = 0; i < _total_men; ++i) {
+		if(players[i].GetSpecificTile () == which_tile) {
+			players[i].UpdateStatus (PieceType::destroyed);
+			break;
+		}
+	}
 }

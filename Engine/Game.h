@@ -31,6 +31,7 @@
 #include <chrono>
 #include <vector>
 #include <array>
+#include <cmath>
 
 class Game {
 public:
@@ -57,6 +58,7 @@ private:
 	void CheckForKing ();
 	bool HasMoves ();
 	int GetJumpTile (const int start_tile, const int end_tile) const;
+	void DestroyIt (const int which_tile);
 	/********************************/
 private:
 	MainWindow& wnd;
