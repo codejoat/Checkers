@@ -1,0 +1,21 @@
+start: 21  - end: 17
+start:  8  - end: 13
+start: 17  - end:  8 jump
+start:  5  - end: 12 jump
+start: 24  - end: 21
+start: 12  - end: 16
+start: 21  - end: 12 jump
+start:  9  - end: 14
+start: 12  - end:  8
+start:  4  - end: 13 jump
+
+
+	std::ofstream log_file ("values.txt", std::ios::app);
+
+	if(!log_file.is_open ()) {
+		std::cerr << "Error opening file values.txt" << std::endl;
+		return;
+	}
+
+	logfile.close();
+

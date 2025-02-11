@@ -1,5 +1,4 @@
 #include "Board.h"
-#include "Players.h"
 
 Board::Board (Graphics& set_gfx)
 	:

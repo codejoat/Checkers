@@ -32,6 +32,8 @@
 #include <vector>
 #include <array>
 #include <cmath>
+#include <fstream>
+#include <iostream>
 
 class Game {
 public:

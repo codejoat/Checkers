@@ -135,23 +135,43 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 }
 
 void Game::HandlePlayerMovement (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
+
+
 	for(int i = 0; i < _total_men; ++i) {
 		for(int j = 0; j < _total_moveable_tiles; ++j) {
 			if(players[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed () && GetPossibleMoves(j)) {
 				_last_click_time = now;
+				
 				int jump_check = abs (players[i].GetSpecificTile () - j);
-				int destroy_it = -1;
-				if(jump_check > 5) {
-					destroy_it = GetJumpTile (players[i].GetSpecificTile (), j);
-					DestroyIt (destroy_it);
-					board.SetOccupiedBy (destroy_it, PlayerType::p0);
+
+				int clear_tile = -1;
+				clear_tile = GetJumpTile (players[i].GetSpecificTile (), j);
+				
+				//log_file << "start_tile: " << players[i].GetSpecificTile ();
+				//log_file << " end_tile: " << j;
+				//log_file << "\tjump_check: " << jump_check << "\n";
+
+				
+				if(jump_check == 7 || jump_check == 9) {
+					//log_file << "tile: " << clear_tile << "\n";
+					DestroyIt (clear_tile);
+					
+					board.SetOccupiedBy (clear_tile, PlayerType::p0);
 				}
+
+				
+				
+				
 				players[i].SetSelected ();
 				players[i].UpdatePosition (i, board.GetTileLocation (j));
 				board.SetOccupiedBy (players[i].GetSpecificTile (), PlayerType::p0);
 				players[i].SetSpecificTile (j);
 				players[i].UpdateSelectStatus (PlayerStatus::non);
 				board.SetOccupiedBy (j, (i >= 12 ? PlayerType::p1 : PlayerType::p2));
+
+				//log_file << "tile: " << players[16].GetSpecificTile () << "\tstatus: " << players[16].GetStatus ();
+				//log_file << "\nboard# 8 occupied by: " << board.GetOccupiedBy (8) << "\n\n";
+
 				ResetCanMoveTo ();
 				++_move_counter;
 			}
@@ -273,54 +293,55 @@ bool Game::HasMoves () {
 
 int Game::GetJumpTile (const int start_tile, const int end_tile) const {
 	switch(start_tile) {
-	case 0:return 5;
-	case 1:if(end_tile == 8) { return 5; } else if(end_tile == 10) { return 6; }
-	case 2:if(end_tile == 9) { return 6; } else if(end_tile == 11) { return 7; }
-	case 3:return 7;
-	case 4:return 8;
-	case 5:if(end_tile == 12) { return 8; } else if(end_tile == 14) { return 9; }
-	case 6:if(end_tile == 13) { return 9; } else if(end_tile == 15) { return 10; }
-	case 7:return 10;
-	case 8:if(end_tile == 1) { return 5; } else if(end_tile == 17) { return 13; }
+	case 0:if(end_tile == 9) { return 5; } else { return -1; }
+	case 1:if(end_tile == 8) { return 5; } else if(end_tile == 10) { return 6; } else { return -1; }
+	case 2:if(end_tile == 9) { return 6; } else if(end_tile == 11) { return 7; } else { return -1; }
+	case 3:if(end_tile == 10) { return 7; } else { return -1; }
+	case 4:if(end_tile == 13) { return 8; } else { return -1; }
+	case 5:if(end_tile == 12) { return 8; } else if(end_tile == 14) { return 9; } else { return -1; }
+	case 6:if(end_tile == 13) { return 9; } else if(end_tile == 15) { return 10; } else { return -1; }
+	case 7:if(end_tile == 14) { return 10; } else { return -1; }
+	case 8:if(end_tile == 1) { return 5; } else if(end_tile == 17) { return 13; } else { return -1; }
 	case 9:if(end_tile == 0) { return 5; } else if(end_tile == 2) { return 6; }
-			else if(end_tile == 16) { return 13; } else if(end_tile == 18) { return 14; }
+			else if(end_tile == 16) { return 13; } else if(end_tile == 18) { return 14; } else { return -1; }
 	case 10:if(end_tile == 1) { return 6; } else if(end_tile == 3) { return 7; }
-			 else if(end_tile == 17) { return 14; } else if(end_tile == 19) { return 15; }
-	case 11:if(end_tile == 2) { return 7; } else if(end_tile == 18) { return 15; }
-	case 12:if(end_tile == 5) { return 8; } else if(end_tile == 21) { return 16; }
+			 else if(end_tile == 17) { return 14; } else if(end_tile == 19) { return 15; } else { return -1; }
+	case 11:if(end_tile == 2) { return 7; } else if(end_tile == 18) { return 15; } else { return -1; }
+	case 12:if(end_tile == 5) { return 8; } else if(end_tile == 21) { return 16; } else { return -1; }
 	case 13:if(end_tile == 4) { return 8; } else if(end_tile == 6) { return 9; }
-			 else if(end_tile == 20) { return 16; } else if(end_tile == 22) { return 17; }
+			 else if(end_tile == 20) { return 16; } else if(end_tile == 22) { return 17; } else { return -1; }
 	case 14:if(end_tile == 5) { return 9; } else if(end_tile == 7) { return 10; }
-			 else if(end_tile == 21) { return 17; } else if(end_tile == 23) { return 18; }
-	case 15:if(end_tile == 6) { return 10; } else if(end_tile == 22) { return 18; }
-	case 16:if(end_tile == 9) { return 13; } else if(end_tile == 25) { return 21; }
+			 else if(end_tile == 21) { return 17; } else if(end_tile == 23) { return 18; } else { return -1; }
+	case 15:if(end_tile == 6) { return 10; } else if(end_tile == 22) { return 18; } else { return -1; }
+	case 16:if(end_tile == 9) { return 13; } else if(end_tile == 25) { return 21; } else { return -1; }
 	case 17:if(end_tile == 8) { return 13; } else if(end_tile == 10) { return 14; }
-			 else if(end_tile == 24) { return 21; } else if(end_tile == 26) { return 22; }
+			 else if(end_tile == 24) { return 21; } else if(end_tile == 26) { return 22; } else { return -1; }
 	case 18:if(end_tile == 9) { return 14; } else if(end_tile == 11) { return 15; }
-			 else if(end_tile == 25) { return 22; } else if(end_tile == 27) { return 23; }
-	case 19:if(end_tile == 10) { return 15; } else if(end_tile == 26) { return 23; }
-	case 20:if(end_tile == 13) { return 16; } else if(end_tile == 29) { return 24; }
+			 else if(end_tile == 25) { return 22; } else if(end_tile == 27) { return 23; } else { return -1; }
+	case 19:if(end_tile == 10) { return 15; } else if(end_tile == 26) { return 23; } else { return -1; }
+	case 20:if(end_tile == 13) { return 16; } else if(end_tile == 29) { return 24; } else { return -1; }
 	case 21:if(end_tile == 12) { return 16; } else if(end_tile == 14) { return 17; }
-			 else if(end_tile == 28) { return 24; } else if(end_tile == 30) { return 25; }
+			 else if(end_tile == 28) { return 24; } else if(end_tile == 30) { return 25; } else { return -1; }
 	case 22:if(end_tile == 13) { return 17; } else if(end_tile == 15) { return 18; }
-			 else if(end_tile == 29) { return 25; } else if(end_tile == 31) { return 26; }
-	case 23:if(end_tile == 14) { return 18; } else if(end_tile == 30) { return 26; }
-	case 24:return 21;
-	case 25:if(end_tile == 16) { return 21; } else if(end_tile == 18) { return 22; }
-	case 26:if(end_tile == 17) { return 22; } else if(end_tile == 19) { return 23; }
-	case 27:return 23;
-	case 28:return 24;
-	case 29:if(end_tile == 20) { return 24; } else if(end_tile == 22) { return 25; }
-	case 30:if(end_tile == 21) { return 25; } else if(end_tile == 23) { return 26; }
-	case 31:return 26;
+			 else if(end_tile == 29) { return 25; } else if(end_tile == 31) { return 26; } else { return -1; }
+	case 23:if(end_tile == 14) { return 18; } else if(end_tile == 30) { return 26; } else { return -1; }
+	case 24:if(end_tile == 17) { return 21; } else { return -1; }
+	case 25:if(end_tile == 16) { return 21; } else if(end_tile == 18) { return 22; } else { return -1; }
+	case 26:if(end_tile == 17) { return 22; } else if(end_tile == 19) { return 23; } else { return -1; }
+	case 27:if(end_tile == 18) { return 23; } else { return -1; }
+	case 28:if(end_tile == 21) { return 24; } else { return -1; }
+	case 29:if(end_tile == 20) { return 24; } else if(end_tile == 22) { return 25; } else { return -1; }
+	case 30:if(end_tile == 21) { return 25; } else if(end_tile == 23) { return 26; } else { return -1; }
+	case 31:if(end_tile == 22) { return 26; } else { return -1; }
 	default:return -1;
 	}
 	return 0;
 }
 
-void Game::DestroyIt (const int which_tile) { 
+void Game::DestroyIt (const int which_tile) {
+
 	for(int i = 0; i < _total_men; ++i) {
-		if(players[i].GetSpecificTile () == which_tile) {
+		if(players[i].GetSpecificTile () == which_tile && players[i].GetStatus() != PieceType::destroyed) {
 			players[i].UpdateStatus (PieceType::destroyed);
 			break;
 		}

@@ -3,34 +3,17 @@
 #include <utility>
 
 struct Position {
-	Position () = default;
-	Position (int set_x, int set_y)
-		:
-		x (set_x),
-		y (set_y) { }
-	Position (const std::pair<int, int> position)
-		:
-		x (position.first),
-		y (position.second) { }
+	Position ();
+	Position (int set_x, int set_y);
+	Position (const std::pair<int, int> position);
 
-	bool operator == (const Position& rhs) const {
-		return this->x == rhs.x && this->y == rhs.y;
-	}
-	bool operator <= (const Position& rhs) const {
-		return this->x <= rhs.x && this->y <= rhs.y;
-	}
-	bool operator >= (const Position& rhs) const {
-		return this->x >= rhs.x && this->y >= rhs.y;
-	}
-	bool operator != (const Position& rhs) const {
-		return this->x != rhs.x && this->y != rhs.y;
-	}
-	Position operator + (int value) const {
-		return Position (this->x + value, this->y + value);
-	}
-	Position operator - (int value) const {
-		return Position (this->x - value, this->y - value);
-	}
+	bool operator == (const Position& rhs) const;
+	bool operator <= (const Position& rhs) const;
+	bool operator >= (const Position& rhs) const;
+	bool operator != (const Position& rhs) const;
+	Position operator + (int value) const;
+	Position operator - (int value) const;
+
 	int x;
 	int y;
 };
