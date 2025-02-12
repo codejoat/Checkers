@@ -83,7 +83,10 @@ void Game::ComposeFrame () {
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
 		for(int j = 0; j < _total_men; ++j) {
 			if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) == PlayerType::p0) && players[j].GetSelected ()) {
-				DrawMoveableTile (board.GetTileLocation(i).x, board.GetTileLocation(i).y);
+				DrawMoveableTile (board.GetTileLocation(i).x, board.GetTileLocation(i).y, false);
+			}
+			if(GetAdditionalMoves (i)) {
+				DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y, true);
 			}
 		}
 	}
@@ -105,6 +108,15 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 		bool is_king = (PieceType::king == players[i].GetStatus () ? true : false);
 		
 		if(players[i].GetStatus () == PieceType::destroyed) { continue; }
+
+		if(players[i].GetSelected () && jump_again) {
+			ParityMoves ();
+			players[i].UpdateSelectStatus (PlayerStatus::select);
+			jump_again = false;
+			ResetCanMoveTo ();
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
+			continue;
+		}
 
 		if(mouse_position >= top_left && mouse_position <= bottom_right && !players[i].GetSelected ()) {
 			players[i].UpdateSelectStatus (PlayerStatus::hover);
@@ -136,44 +148,40 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 
 void Game::HandlePlayerMovement (const Position& mouse_position, const std::chrono::time_point<std::chrono::steady_clock>& now) {
 
-
 	for(int i = 0; i < _total_men; ++i) {
 		for(int j = 0; j < _total_moveable_tiles; ++j) {
 			if(players[i].GetSelected () && board.GetTileHover (j) && wnd.mouse.LeftIsPressed () && GetPossibleMoves(j)) {
 				_last_click_time = now;
 				
+				
 				int jump_check = abs (players[i].GetSpecificTile () - j);
-
 				int clear_tile = -1;
 				clear_tile = GetJumpTile (players[i].GetSpecificTile (), j);
 				
-				//log_file << "start_tile: " << players[i].GetSpecificTile ();
-				//log_file << " end_tile: " << j;
-				//log_file << "\tjump_check: " << jump_check << "\n";
-
-				
-				if(jump_check == 7 || jump_check == 9) {
-					//log_file << "tile: " << clear_tile << "\n";
+				if(jump_check == move_seven || jump_check == move_nine) {
 					DestroyIt (clear_tile);
-					
 					board.SetOccupiedBy (clear_tile, PlayerType::p0);
 				}
 
-				
-				
-				
-				players[i].SetSelected ();
+				for(int k = 0; k < _total_moveable_tiles; ++k) {
+					jump_again = GetAdditionalMoves (k);
+					if(jump_again) { break; }
+				}
+	
 				players[i].UpdatePosition (i, board.GetTileLocation (j));
 				board.SetOccupiedBy (players[i].GetSpecificTile (), PlayerType::p0);
 				players[i].SetSpecificTile (j);
-				players[i].UpdateSelectStatus (PlayerStatus::non);
 				board.SetOccupiedBy (j, (i >= 12 ? PlayerType::p1 : PlayerType::p2));
-
-				//log_file << "tile: " << players[16].GetSpecificTile () << "\tstatus: " << players[16].GetStatus ();
-				//log_file << "\nboard# 8 occupied by: " << board.GetOccupiedBy (8) << "\n\n";
-
-				ResetCanMoveTo ();
-				++_move_counter;
+				
+				if(jump_again) {
+					continue;
+				} else {
+					players[i].SetSelected ();
+					players[i].UpdateSelectStatus (PlayerStatus::non);
+					ResetCanMoveTo ();
+					++_move_counter;
+				}
+				
 			}
 		}
 	}
@@ -238,6 +246,15 @@ void Game::CanMoveTo (const PlayerType which_player, const int which_man, const 
 			board.GetOccupiedBy (jump) == PlayerType::p0) {
 			_can_move_to[jump] = true;
 		}
+		
+		// Check for additional jumps
+		for(int extra_jump : jumps[jump]) {
+			int next_tile_to_jump = GetJumpTile (jump, extra_jump);
+			if(board.GetOccupiedBy (next_tile_to_jump) == (which_player == PlayerType::p1 ? PlayerType::p2 : PlayerType::p1) &&
+				board.GetOccupiedBy (extra_jump) == PlayerType::p0 && _can_move_to[jump]) {
+				_additional_jumps[extra_jump] = true;
+			}
+		}
 	}
 
 	// Check for regular moves
@@ -248,17 +265,33 @@ void Game::CanMoveTo (const PlayerType which_player, const int which_man, const 
 	}
 }
 
-void Game::DrawMoveableTile (int board_x, int board_y) {
-	gfx.DrawRing (board_x, board_y, 10, 12, Colors::Green);
+void Game::DrawMoveableTile (int board_x, int board_y, bool additional) {
+	if(!additional) {
+		gfx.DrawRing (board_x, board_y, 10, 12, Colors::Green);
+	} else {
+		gfx.DrawRing (board_x, board_y, 10, 12, Color(148, 125, 152));
+	}
+	
 }
 
 bool Game::GetPossibleMoves (const int which_tile) const {
 	return _can_move_to[which_tile];
 }
 
+bool Game::GetAdditionalMoves (const int which_tile) const {
+	return _additional_jumps[which_tile];
+}
+
+void Game::ParityMoves () {
+	for(int i = 0; i < _total_moveable_tiles; ++i) {
+		_can_move_to[i] = _additional_jumps[i];
+	}
+}
+
 void Game::ResetCanMoveTo () {
 	for(int i = 0; i < _total_moveable_tiles; ++i) {
 		_can_move_to[i] = false;
+		_additional_jumps[i] = false;
 	}
 }
 

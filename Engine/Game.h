@@ -54,8 +54,10 @@ private:
 	bool PlayerTurn () const;
 	void DrawTable ();
 	void CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king);
-	void DrawMoveableTile (int board_x, int board_y);
+	void DrawMoveableTile (int board_x, int board_y, bool additional);
 	bool GetPossibleMoves (const int which_tile) const;
+	bool GetAdditionalMoves (const int which_tile) const;
+	void ParityMoves ();
 	void ResetCanMoveTo ();
 	void CheckForKing ();
 	bool HasMoves ();
@@ -67,6 +69,8 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
+	static constexpr int move_nine = 9;
+	static constexpr int move_seven = 7;
 	static constexpr int _total_men = 24;
 	static constexpr int _men_per_side = 12;
 	static constexpr int _total_moveable_tiles = 32;
@@ -74,7 +78,9 @@ private:
 	static constexpr int _circle_half_width = 30;
 
 	int _move_counter = 0;
+	bool jump_again = false;
 	std::array<bool, _total_moveable_tiles> _can_move_to = { false };
+	std::array<bool, _total_moveable_tiles> _additional_jumps = { false };
 
 	Board board;
 	Position position;
