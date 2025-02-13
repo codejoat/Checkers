@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AlphaNumericSprites.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="ChiliException.h" />
     <ClInclude Include="ChiliWin.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MainWindow.h" />
+    <ClInclude Include="MessageSprites.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Players.h" />
     <ClInclude Include="Position.h" />
@@ -155,6 +157,7 @@
     <ClInclude Include="Status.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AlphaNumericSprites.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="COMInitializer.cpp" />
     <ClCompile Include="DXErr.cpp" />
@@ -163,6 +166,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="MessageSprites.cpp" />
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Players.cpp" />
     <ClCompile Include="Position.cpp" />

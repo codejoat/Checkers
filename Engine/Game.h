@@ -34,6 +34,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include "MessageSprites.h"
 
 class Game {
 public:
@@ -53,7 +54,7 @@ private:
 	void DeselectAllPlayers ();
 	bool PlayerTurn () const;
 	void DrawTable ();
-	void CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king);
+	void CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king, bool only_jump);
 	void DrawMoveableTile (int board_x, int board_y, bool additional);
 	bool GetPossibleMoves (const int which_tile) const;
 	bool GetAdditionalMoves (const int which_tile) const;
@@ -63,6 +64,7 @@ private:
 	bool HasMoves ();
 	int GetJumpTile (const int start_tile, const int end_tile) const;
 	void DestroyIt (const int which_tile);
+	void DrawDestroyed (const int total_destroyed, const PlayerType which_player);
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -76,14 +78,21 @@ private:
 	static constexpr int _total_moveable_tiles = 32;
 	static constexpr int _square_half_width = 35;
 	static constexpr int _circle_half_width = 30;
-
+	
+	int p1_destroyed = 0;
+	int p2_destroyed = 0;
 	int _move_counter = 0;
 	bool jump_again = false;
+	bool game_begin = false;
+	bool game_win = false;
+
 	std::array<bool, _total_moveable_tiles> _can_move_to = { false };
 	std::array<bool, _total_moveable_tiles> _additional_jumps = { false };
 
 	Board board;
+	Players ply;
 	Position position;
+	MessageSprites sprites;
 	std::array<Players, _total_men> players;
 
 	std::chrono::steady_clock::time_point _last_click_time;

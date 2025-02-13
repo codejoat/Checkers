@@ -17,8 +17,9 @@ private:
 public:
 	Players () = default;
 	Players (const Position& set_position);
-	void Draw (Graphics& gfx, const Position& position, const PieceType status, const PlayerType which_player) const;
+	void Draw (Graphics& gfx, const Position& position, const PieceType status, const PlayerType which_player, const bool captured) const;
 	void DrawSelectStatus (Graphics& gfx, const Position& position, const PlayerStatus select_status) const;
+	void DrawCrown (Graphics& gfx, Position& position, Color c) const;
 	void InitPosition (const Position& set_position);
 	void InitStatus ();
 	void UpdateStatus (const PieceType new_status);

@@ -4,12 +4,13 @@ Players::Players (const Position& set_position)
 	:
 	position (set_position) { }
 
-void Players::Draw (Graphics& gfx, const Position& position, const PieceType status, const PlayerType which_player) const {
+void Players::Draw (Graphics& gfx, const Position& position, const PieceType status, const PlayerType which_player, const bool captured) const {
+	const int total_radius = captured ? radius / 2 : radius;
 	switch(which_player) {
-	case PlayerType::p1: gfx.DrawCircle (position.x, position.y, radius, Color (0, 0, 0));
-		gfx.DrawCircle (position.x, position.y, radius - 5, Color (5, 5, 5)); break;
-	case PlayerType::p2: gfx.DrawCircle (position.x, position.y, radius, Color (185, 0, 0));
-		gfx.DrawCircle (position.x, position.y, radius - 5, Color (165, 10, 10)); break;
+	case PlayerType::p1: gfx.DrawCircle (position.x, position.y, total_radius, Color (0, 0, 0));
+		gfx.DrawCircle (position.x, position.y, total_radius - 5, Color (5, 5, 5)); break;
+	case PlayerType::p2: gfx.DrawCircle (position.x, position.y, total_radius, Color (185, 0, 0));
+		gfx.DrawCircle (position.x, position.y, total_radius - 5, Color (165, 10, 10)); break;
 	default:break;
 	}
 
@@ -17,8 +18,8 @@ void Players::Draw (Graphics& gfx, const Position& position, const PieceType sta
 	case PieceType::man: break;
 	case PieceType::king: 
 		switch(which_player) {
-		case PlayerType::p1:gfx.DrawRing (position.x, position.y, 10, 14, Color (175, 0, 175)); break;
-		case PlayerType::p2:gfx.DrawRing (position.x, position.y, 10, 14, Color (175, 175, 0)); break;
+		case PlayerType::p1: DrawCrown (gfx, Position (position.x - 8, position.y - 5), Colors::Magenta); break;
+		case PlayerType::p2: DrawCrown (gfx, Position (position.x - 8, position.y - 5), Colors::Yellow); break;
 		}
 	default:break;
 	}
@@ -83,5 +84,158 @@ bool Players::GetSelected () const {
 
 int Players::GetSpecificTile () const {
 	return specific_tile;
+}
+
+void Players::DrawCrown (Graphics& gfx, Position& position, Color c) const {
+	gfx.PutPixel (position.x + 8, position.y + 0, Colors::Gray);
+	gfx.PutPixel (position.x + 9, position.y + 0, Colors::Gray);
+
+
+	gfx.PutPixel (position.x +  7, position.y + 1, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 1, c);
+	gfx.PutPixel (position.x +  9, position.y + 1, c);
+	gfx.PutPixel (position.x + 10, position.y + 1, Colors::Gray);
+
+
+	gfx.PutPixel (position.x +  7, position.y + 2, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 2, c);
+	gfx.PutPixel (position.x +  9, position.y + 2, c);
+	gfx.PutPixel (position.x + 10, position.y + 2, Colors::Gray);
+
+	gfx.PutPixel (position.x +  1, position.y + 3, Colors::Gray);
+	gfx.PutPixel (position.x +  2, position.y + 3, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 3, Colors::Gray);
+	gfx.PutPixel (position.x +  9, position.y + 3, Colors::Gray);
+	gfx.PutPixel (position.x + 15, position.y + 3, Colors::Gray);
+	gfx.PutPixel (position.x + 16, position.y + 3, Colors::Gray);
+
+	gfx.PutPixel (position.x +  0, position.y + 4, Colors::Gray);
+	gfx.PutPixel (position.x +  1, position.y + 4, c);
+	gfx.PutPixel (position.x +  2, position.y + 4, c);
+	gfx.PutPixel (position.x +  3, position.y + 4, Colors::Gray);
+	gfx.PutPixel (position.x +  7, position.y + 4, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 4, c);
+	gfx.PutPixel (position.x +  9, position.y + 4, c);
+	gfx.PutPixel (position.x + 10, position.y + 4, Colors::Gray);
+	gfx.PutPixel (position.x + 14, position.y + 4, Colors::Gray);
+	gfx.PutPixel (position.x + 15, position.y + 4, c);
+	gfx.PutPixel (position.x + 16, position.y + 4, c);
+	gfx.PutPixel (position.x + 17, position.y + 4, Colors::Gray);
+
+	gfx.PutPixel (position.x +  0, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x +  1, position.y + 5, c);
+	gfx.PutPixel (position.x +  2, position.y + 5, c);
+	gfx.PutPixel (position.x +  3, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x +  6, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x +  7, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 5, c);
+	gfx.PutPixel (position.x +  9, position.y + 5, c);
+	gfx.PutPixel (position.x + 10, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x + 11, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x + 14, position.y + 5, Colors::Gray);
+	gfx.PutPixel (position.x + 15, position.y + 5, c);
+	gfx.PutPixel (position.x + 16, position.y + 5, c);
+	gfx.PutPixel (position.x + 17, position.y + 5, Colors::Gray);
+
+	gfx.PutPixel (position.x +  0, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x +  1, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x +  2, position.y + 6, c);
+	gfx.PutPixel (position.x +  3, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x +  5, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x +  6, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x +  7, position.y + 6, c);
+	gfx.PutPixel (position.x +  8, position.y + 6, c);
+	gfx.PutPixel (position.x +  9, position.y + 6, c);
+	gfx.PutPixel (position.x + 10, position.y + 6, c);
+	gfx.PutPixel (position.x + 11, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x + 12, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x + 14, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x + 15, position.y + 6, c);
+	gfx.PutPixel (position.x + 16, position.y + 6, Colors::Gray);
+	gfx.PutPixel (position.x + 17, position.y + 6, Colors::Gray);
+
+	gfx.PutPixel (position.x +  1, position.y + 7, Colors::Gray);
+	gfx.PutPixel (position.x +  2, position.y + 7, c);
+	gfx.PutPixel (position.x +  3, position.y + 7, c);
+	gfx.PutPixel (position.x +  4, position.y + 7, Colors::Gray);
+	gfx.PutPixel (position.x +  5, position.y + 7, Colors::Gray);
+	gfx.PutPixel (position.x +  6, position.y + 7, c);
+	gfx.PutPixel (position.x +  7, position.y + 7, c);
+	gfx.PutPixel (position.x +  8, position.y + 7, c);
+	gfx.PutPixel (position.x +  9, position.y + 7, c);
+	gfx.PutPixel (position.x + 10, position.y + 7, c);
+	gfx.PutPixel (position.x + 11, position.y + 7, c);
+	gfx.PutPixel (position.x + 12, position.y + 7, Colors::Gray);
+	gfx.PutPixel (position.x + 13, position.y + 7, Colors::Gray);
+	gfx.PutPixel (position.x + 14, position.y + 7, c);
+	gfx.PutPixel (position.x + 15, position.y + 7, c);
+	gfx.PutPixel (position.x + 16, position.y + 7, Colors::Gray);
+
+	gfx.PutPixel (position.x +  2, position.y + 8, Colors::Gray);
+	gfx.PutPixel (position.x +  3, position.y + 8, c);
+	gfx.PutPixel (position.x +  4, position.y + 8, c);
+	gfx.PutPixel (position.x +  5, position.y + 8, c);
+	gfx.PutPixel (position.x +  6, position.y + 8, c);
+	gfx.PutPixel (position.x +  7, position.y + 8, c);
+	gfx.PutPixel (position.x +  8, position.y + 8, c);
+	gfx.PutPixel (position.x +  9, position.y + 8, c);
+	gfx.PutPixel (position.x + 10, position.y + 8, c);
+	gfx.PutPixel (position.x + 11, position.y + 8, c);
+	gfx.PutPixel (position.x + 12, position.y + 8, c);
+	gfx.PutPixel (position.x + 13, position.y + 8, c);
+	gfx.PutPixel (position.x + 14, position.y + 8, c);
+	gfx.PutPixel (position.x + 15, position.y + 8, Colors::Gray);
+
+	gfx.PutPixel (position.x +  2, position.y + 9, Colors::Gray);
+	gfx.PutPixel (position.x +  3, position.y + 9, c);
+	gfx.PutPixel (position.x +  4, position.y + 9, c);
+	gfx.PutPixel (position.x +  5, position.y + 9, c);
+	gfx.PutPixel (position.x +  6, position.y + 9, c);
+	gfx.PutPixel (position.x +  7, position.y + 9, c);
+	gfx.PutPixel (position.x +  8, position.y + 9, c);
+	gfx.PutPixel (position.x +  9, position.y + 9, c);
+	gfx.PutPixel (position.x + 10, position.y + 9, c);
+	gfx.PutPixel (position.x + 11, position.y + 9, c);
+	gfx.PutPixel (position.x + 12, position.y + 9, c);
+	gfx.PutPixel (position.x + 13, position.y + 9, c);
+	gfx.PutPixel (position.x + 14, position.y + 9, c);
+	gfx.PutPixel (position.x + 15, position.y + 9, Colors::Gray);
+
+	gfx.PutPixel (position.x +  3, position.y + 10, Colors::Gray);
+	gfx.PutPixel (position.x +  4, position.y + 10, c);
+	gfx.PutPixel (position.x +  5, position.y + 10, c);
+	gfx.PutPixel (position.x +  6, position.y + 10, c);
+	gfx.PutPixel (position.x +  7, position.y + 10, c);
+	gfx.PutPixel (position.x +  8, position.y + 10, c);
+	gfx.PutPixel (position.x +  9, position.y + 10, c);
+	gfx.PutPixel (position.x + 10, position.y + 10, c);
+	gfx.PutPixel (position.x + 11, position.y + 10, c);
+	gfx.PutPixel (position.x + 12, position.y + 10, c);
+	gfx.PutPixel (position.x + 13, position.y + 10, c);
+	gfx.PutPixel (position.x + 14, position.y + 10, Colors::Gray);
+
+	gfx.PutPixel (position.x +  3, position.y + 11, Colors::Gray);
+	gfx.PutPixel (position.x +  4, position.y + 11, Colors::Gray);
+	gfx.PutPixel (position.x +  5, position.y + 11, c);
+	gfx.PutPixel (position.x +  6, position.y + 11, c);
+	gfx.PutPixel (position.x +  7, position.y + 11, c);
+	gfx.PutPixel (position.x +  8, position.y + 11, c);
+	gfx.PutPixel (position.x +  9, position.y + 11, c);
+	gfx.PutPixel (position.x + 10, position.y + 11, c);
+	gfx.PutPixel (position.x + 11, position.y + 11, c);
+	gfx.PutPixel (position.x + 12, position.y + 11, c);
+	gfx.PutPixel (position.x + 13, position.y + 11, Colors::Gray);
+	gfx.PutPixel (position.x + 14, position.y + 11, Colors::Gray);
+
+	gfx.PutPixel (position.x +  4, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x +  5, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x +  6, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x +  7, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x +  8, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x +  9, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x + 10, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x + 11, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x + 12, position.y + 12, Colors::Gray);
+	gfx.PutPixel (position.x + 13, position.y + 12, Colors::Gray);
 }
 

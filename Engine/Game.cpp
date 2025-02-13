@@ -26,6 +26,7 @@ Game::Game (MainWindow& wnd)
 	wnd (wnd),
 	gfx (wnd),
 	board (gfx),
+	sprites(),
 	position (116, 16) // Top left corner of board, to set board in center of 800 x 600 screen
 {
 	for(int i = 0; i < _total_men; i++) {
@@ -54,40 +55,66 @@ void Game::Go () {
 
 
 void Game::UpdateModel () {
-	const Position mouse_position (wnd.mouse.GetPos ());
-	auto now = std::chrono::steady_clock::now ();
+	
+	if(!game_begin && !game_win) {
+		if(wnd.kbd.KeyIsPressed (VK_RETURN)) {
+			game_begin = true;
+		}
+	} else {
+		const Position mouse_position (wnd.mouse.GetPos ());
+		auto now = std::chrono::steady_clock::now ();
 
-	CheckForKing ();
-	UpdatePlayerStatus (mouse_position, now);
-	UpdateBoardHover (mouse_position);
-	HandlePlayerMovement (mouse_position, now);
+		CheckForKing ();
+		UpdatePlayerStatus (mouse_position, now);
+		UpdateBoardHover (mouse_position);
+		HandlePlayerMovement (mouse_position, now);
+		if(p1_destroyed == 12 || p2_destroyed == 12) {
+			game_win = true;
+		}
+	}
 }
 
 void Game::ComposeFrame () {
 	DrawTable ();
 	board.Draw (position);
-	
-	for(int i = 0; i < _total_men; ++i) {
-		if(players[i].GetStatus () != PieceType::destroyed) {
-			if(i >= _men_per_side) {
-				players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p1);
-			} else {
-				players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p2);
+
+	if(!game_begin) {
+		sprites.DrawPressEnter (gfx);
+	} else {
+		for(int i = 0; i < _total_men; ++i) {
+			if(players[i].GetStatus () != PieceType::destroyed) {
+				if(i >= _men_per_side) {
+					players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p1, false);
+				} else {
+					players[i].Draw (gfx, players[i].GetPosition (), players[i].GetStatus (), PlayerType::p2, false);
+				}
+			}
+		}
+		for(int i = 0; i < _total_men; ++i) {
+			players[i].DrawSelectStatus (gfx, players[i].GetPosition (), players[i].GetSelectStatus ());
+		}
+
+		for(int i = 0; i < _total_moveable_tiles; ++i) {
+			for(int j = 0; j < _total_men; ++j) {
+				if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) == PlayerType::p0) && players[j].GetSelected ()) {
+					DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y, false);
+				}
+				if(GetAdditionalMoves (i)) {
+					DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y, true);
+				}
 			}
 		}
 	}
-	for(int i = 0; i < _total_men; ++i) {
-		players[i].DrawSelectStatus (gfx, players[i].GetPosition (), players[i].GetSelectStatus ());
-	}
 
-	for(int i = 0; i < _total_moveable_tiles; ++i) {
-		for(int j = 0; j < _total_men; ++j) {
-			if(GetPossibleMoves (i) && (board.GetOccupiedBy (i) == PlayerType::p0) && players[j].GetSelected ()) {
-				DrawMoveableTile (board.GetTileLocation(i).x, board.GetTileLocation(i).y, false);
-			}
-			if(GetAdditionalMoves (i)) {
-				DrawMoveableTile (board.GetTileLocation (i).x, board.GetTileLocation (i).y, true);
-			}
+	sprites.DrawPlayer1 (gfx);
+	DrawDestroyed (p2_destroyed, PlayerType::p2);
+	sprites.DrawPlayer2 (gfx);
+	DrawDestroyed (p1_destroyed, PlayerType::p1);
+	if(game_win) {
+		if(p1_destroyed == 12) {
+			sprites.DrawWinner (gfx, PlayerType::p2, Colors::Yellow);
+		} else {
+			sprites.DrawWinner (gfx, PlayerType::p1, Colors::Magenta);
 		}
 	}
 }
@@ -114,7 +141,7 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 			players[i].UpdateSelectStatus (PlayerStatus::select);
 			jump_again = false;
 			ResetCanMoveTo ();
-			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king, true);
 			continue;
 		}
 
@@ -126,7 +153,7 @@ void Game::UpdatePlayerStatus (const Position& mouse_position, const std::chrono
 		
 		if(players[i].GetSelectStatus () == PlayerStatus::hover && wnd.mouse.LeftIsPressed ()) {
 			ResetCanMoveTo ();
-			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king);
+			CanMoveTo (player_check, i, players[i].GetSpecificTile (), is_king, false);
 			if(HasMoves ()) {
 				DeselectAllPlayers ();
 				players[i].SetSelected ();
@@ -154,9 +181,10 @@ void Game::HandlePlayerMovement (const Position& mouse_position, const std::chro
 				_last_click_time = now;
 				
 				
+				// When subtracting start position from end position, or vice versa, the absolute values
+				// possible are 3, 4, 5, 7, and 9. If they are 7 or 9, then a jump took place.
 				int jump_check = abs (players[i].GetSpecificTile () - j);
-				int clear_tile = -1;
-				clear_tile = GetJumpTile (players[i].GetSpecificTile (), j);
+				int clear_tile = GetJumpTile (players[i].GetSpecificTile (), j);
 				
 				if(jump_check == move_seven || jump_check == move_nine) {
 					DestroyIt (clear_tile);
@@ -235,7 +263,7 @@ void Game::DrawTable () {
 	}
 }
 
-void Game::CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king) {
+void Game::CanMoveTo (const PlayerType which_player, const int which_man, const int which_tile, bool is_king, bool only_jump) {
 	const auto & jumps = is_king ? king_jumps : (which_player == PlayerType::p1 ? p1_jumps : p2_jumps);
 	const auto & moves = is_king ? king_moves : (which_player == PlayerType::p1 ? p1_moves : p2_moves);
 
@@ -258,9 +286,11 @@ void Game::CanMoveTo (const PlayerType which_player, const int which_man, const 
 	}
 
 	// Check for regular moves
-	for(int move : moves[which_tile]) {
-		if(board.GetOccupiedBy (move) == PlayerType::p0) {
-			_can_move_to[move] = true;
+	if(!only_jump) {
+		for(int move : moves[which_tile]) {
+			if(board.GetOccupiedBy (move) == PlayerType::p0) {
+				_can_move_to[move] = true;
+			}
 		}
 	}
 }
@@ -324,6 +354,7 @@ bool Game::HasMoves () {
 	return false;
 }
 
+// This could be done with unordered maps, I just find this easier to understand, right now.
 int Game::GetJumpTile (const int start_tile, const int end_tile) const {
 	switch(start_tile) {
 	case 0:if(end_tile == 9) { return 5; } else { return -1; }
@@ -372,11 +403,18 @@ int Game::GetJumpTile (const int start_tile, const int end_tile) const {
 }
 
 void Game::DestroyIt (const int which_tile) {
-
 	for(int i = 0; i < _total_men; ++i) {
 		if(players[i].GetSpecificTile () == which_tile && players[i].GetStatus() != PieceType::destroyed) {
 			players[i].UpdateStatus (PieceType::destroyed);
+			i >= 12 ? ++p1_destroyed : ++p2_destroyed;
 			break;
 		}
+	}
+}
+
+void Game::DrawDestroyed (const int total_destroyed, const PlayerType which_player) {
+	const int column_placement = (which_player == PlayerType::p2) ? 55 : 740;
+	for(int i = 0; i < total_destroyed; ++i) {
+		ply.Draw (gfx, Position (column_placement, 90 + (i * 35)), PieceType::man, which_player, true);
 	}
 }

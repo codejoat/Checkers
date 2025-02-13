@@ -69,6 +69,12 @@
     <ClInclude Include="Status.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AlphaNumericSprites.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageSprites.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXErr.cpp">
@@ -108,6 +114,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Position.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AlphaNumericSprites.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageSprites.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

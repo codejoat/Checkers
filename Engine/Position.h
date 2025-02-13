@@ -14,8 +14,8 @@ struct Position {
 	Position operator + (int value) const;
 	Position operator - (int value) const;
 
-	int x;
-	int y;
+	int x = -1;
+	int y = -1;
 };
 
 
